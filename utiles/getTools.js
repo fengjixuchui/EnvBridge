@@ -9,7 +9,7 @@ function addDecorator(code, obj_name, target_name)
     new_code += ";(function (obj)\n{\n";
     new_code += code;
     new_code += '\n';
-    new_code += `obj.${target_name} = ${target_name}\n`;
+    new_code += `obj.${target_name} = ${target_name};\n`;
     new_code += `\n})(${obj_name});\n`;
 
     return new_code;
@@ -17,8 +17,15 @@ function addDecorator(code, obj_name, target_name)
 // 传入唯一暴露对象的名字
 function getTools(obj_name)
 {
-    let code = `let ${obj_name} = {};\n`;
-    let file_names = ["toStringNative", "proxy"];
+    // 配置比较少就写在这了
+    let code = `let ${obj_name} = {
+    history: "",
+    is_proxy: true,
+    is_print: true,
+    memory: {},
+};`;
+
+    let file_names = ["toStringNative", "stringify", "envProxy", "addLog"];
 
     for (let file_name of file_names)
     {

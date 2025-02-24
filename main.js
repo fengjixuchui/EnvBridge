@@ -7,12 +7,12 @@ const { getEnv } = require("./utiles/getEnv");
 const { getTools } = require("./utiles/getTools");
 
 let code = "";
-// 唯一暴露对象的名字
+// 唯一暴露对象的名字，可以一键改名
 let obj_name = "nothing";
 
 // 拼装代码
 code += getTools(obj_name);
-code += getEnv();
+code += getEnv(obj_name);
 code += readJsFile(path.resolve(__dirname, "examples", "shape.js"))
 
 // 生成完整代码保存下来

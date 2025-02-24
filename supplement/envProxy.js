@@ -173,3 +173,20 @@ function _proxyHandleTemplate(name, mode, target, property, args, callBackFunc) 
     }
     return result;
 }
+
+function envProxy(proxyObject, name)
+{
+    if (obj["is_proxy"]) return proxyObject;
+    else 
+    {
+        let callBackFunc = (name, mode, target, property, value) => { 
+            let content = obj["stringify"](value, 20, false);
+            let text = `${name} property: ${property} value: ${content}\r\n`;
+
+            obj["history"] += text;
+            if (obj["is_print"]) console.log(text);
+        }
+
+        return proxy(proxyObject, name, callBackFunc);
+    }
+}
