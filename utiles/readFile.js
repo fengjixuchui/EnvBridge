@@ -5,7 +5,7 @@ function isJsFile(name)
 {
     return name.slice(-3) == ".js";
 }
-
+// 统一读取文件的接口
 function readJsFile(file_path)
 {
     let code = "";
