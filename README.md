@@ -26,6 +26,16 @@
 
 ## main.js
 入口，更改配置、拼接代码、运行。
+### 配置注释
+```js
+let init_config = {
+    is_proxy: true,                         // 是否代理对象
+    is_hook_proxyhandler: false,            // 是否拦截代理对象的 get、set、has 等句柄
+    is_print: true,                         // 是否用 console.log 打印出来
+    history: "",                            // 日志历史，在调试过程中，可 copy(nothing.history) 复制日志出来
+    memory: {},                             // 缓存
+}
+```
 
 ## run.js
 每次运行 main.js 都会生成一份完整代码。

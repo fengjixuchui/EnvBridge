@@ -10,14 +10,14 @@ let code = "";
 // 唯一暴露对象的名字，可以一键改名
 let obj_name = "nothing";
 // 要运行的代码，examples 文件夹中文件名
-let file_name = "shape.js";
+let file_name = "test.js";
 // 配置
 let init_config = {
-    is_proxy: true,                         // 是否代理对象
-    is_hook_proxyhandler: false,            // 是否拦截代理对象的 get、set、has 等句柄
-    is_print: true,                         // 是否用 console.log 打印出来
-    history: "",                            // 日志历史，在调试过程中，可 copy(nothing.history) 复制日志出来
-    memory: {},                             // 缓存
+    is_proxy: true,           
+    is_hook_proxyhandler: false,         
+    is_print: true,                      
+    history: "",                          
+    memory: {},    
 }
 
 // 拼装代码
