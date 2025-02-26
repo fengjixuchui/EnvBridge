@@ -15,7 +15,7 @@ function readJsFile(file_path)
 
     return code;
 }
-
+// 读取一个目录下所有的 js 文件，拼接后返回
 function readJsFiles(dir) {
     let files = fs.readdirSync(dir);
     let code = "";

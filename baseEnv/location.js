@@ -6,3 +6,11 @@ function Location()
 
 var location = {};
 location.__proto__ = Location.prototype;
+
+Object.defineProperties(Location.prototype, {
+    [Symbol.toStringTag]: {
+        value: "Location",
+        configurable: true
+    }
+});
+__obj.toStringNative(Location, "Location");

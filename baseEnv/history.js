@@ -6,3 +6,11 @@ function History()
 
 var history = {};
 history.__proto__ = History.prototype;
+
+Object.defineProperties(History.prototype, {
+    [Symbol.toStringTag]: {
+        value: "History",
+        configurable: true
+    }
+});
+__obj.toStringNative(History, "History");

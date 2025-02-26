@@ -1,4 +1,4 @@
-let nothing = {"history":"","is_proxy":false,"is_print":true,"is_test":true,"memory":{}};
+let nothing = {"history":"","is_hook_proxyhandler":false,"is_print":true,"memory":{}};
 ;(function (__obj)
 {
 // file path: E:\ning\code\Reverse\WEB\EnvBridge\supplement\toStringNative.js
@@ -383,15 +383,15 @@ function _proxyHandleTemplate(name, mode, target, property, args, callBackFunc) 
 function envProxy(proxyObject, name)
 {
     let callBackFunc = (name, mode, target, property, value) => { 
-        if (!__obj["is_proxy"]) return;
+        if (!__obj["is_hook_proxyhandler"]) return;
         // let watches = ["get", "set", "has"];
         // if (!watches.includes(mode)) return;
 
-        __obj["is_proxy"] = false;
+        __obj["is_hook_proxyhandler"] = false;
         let value_ = __obj["stringify"](value, 20, false);
         let property_ =  __obj["stringify"](property, 20, false);
         let text = `[${name}] ${mode} property: ${property_} value: ${value_}\r\n`;
-        __obj["is_proxy"] = true;
+        __obj["is_hook_proxyhandler"] = true;
 
         __obj["history"] += text;
         if (__obj["is_print"]) console.log(text);
@@ -437,146 +437,6 @@ HTMLDocument.prototype.__proto__ = Document.prototype;
 Document.prototype.__proto__ = Node.prototype;
 Node.prototype.__proto__ = EventTarget.prototype;
 
-console.log(EventTarget);
-
-// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\EventTarget.js
-function EventTarget() {};
-
-// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\history.js
-function History() 
-{ 
-    nothing.addLog("History 被 new 了，报错，可能是查看堆栈检测。");
-    throw new TypeError("Illegal constructor");
-};
-
-var history = {};
-history.__proto__ = History.prototype;
-// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\localStorage.js
-function Storage() 
-{ 
-    nothing.addLog("Storage 被 new 了，报错，可能是查看堆栈检测。");
-    throw new TypeError("Illegal constructor");
-};
-
-var localStorage = {};
-localStorage.__proto__ = Storage.prototype;
-// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\location.js
-function Location()
-{
-    nothing.addLog("Location 被 new 了，报错，可能是查看堆栈检测。");
-    throw new TypeError("Illegal constructor");
-};
-
-var location = {};
-location.__proto__ = Location.prototype;
-// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\navigator.js
-function Navigator() 
-{ 
-    nothing.addLog("Navigator 被 new 了，报错，可能是查看堆栈检测。");
-    throw new TypeError("Illegal constructor");
-};
-
-// 不能用 let
-var navigator = {};
-navigator.__proto__ = Navigator.prototype;
-// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\screen.js
-function Screen() 
-{ 
-    nothing.addLog("Screen 被 new 了，报错，可能是查看堆栈检测。");
-    throw new TypeError("Illegal constructor");
-};
-
-var screen = {};
-screen.__proto__ = Screen.prototype;
-Screen.prototype.__proto__ = EventTarget.prototype;
-// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\window.js
-let window = globalThis;
-
-function Window() 
-{
-    nothing.addLog("Window 被 new 了，报错，可能是查看堆栈检测。");
-    throw new TypeError("Illegal constructor");
-};
-
-function WindowProperties() {};
-
-window.__proto__ = Window.prototype;
-Window.prototype.__proto__ = WindowProperties.prototype;
-WindowProperties.prototype.__proto__ = EventTarget.prototype;
-// file path: E:\ning\code\Reverse\WEB\EnvBridge\supplement\extras.js
-delete global;
-
-// EventTarget 的修补
-Object.defineProperties(EventTarget.prototype, {
-    [Symbol.toStringTag]: {
-        value: "EventTarget",
-        configurable: true
-    }
-})
-nothing.toStringNative(EventTarget, "EventTarget");
-
-// window 的修补
-Object.defineProperties(Window.prototype, {
-    [Symbol.toStringTag]: {
-        value: "Window",
-        configurable: true
-    }
-});
-Object.defineProperties(WindowProperties.prototype, {
-    [Symbol.toStringTag]: {
-        value: "WindowProperties",
-        configurable: true
-    }
-});
-WindowProperties = undefined;
-nothing.toStringNative(Window, "Window");
-
-// navigator 的修补
-Object.defineProperties(Navigator.prototype, {
-    [Symbol.toStringTag]: {
-        value: "Navigator",
-        configurable: true
-    }
-});
-nothing.toStringNative(Navigator, "Navigator");
-
-// localStorage 的修补
-Object.defineProperties(Storage.prototype, {
-    [Symbol.toStringTag]: {
-        value: "Storage",
-        configurable: true
-    }
-});
-nothing.toStringNative(Storage, "Storage");
-
-// screen 
-Object.defineProperties(Screen.prototype, {
-    [Symbol.toStringTag]: {
-        value: "Screen",
-        configurable: true
-    }
-});
-nothing.toStringNative(Screen, "Screen");
-
-// history
-Object.defineProperties(History.prototype, {
-    [Symbol.toStringTag]: {
-        value: "History",
-        configurable: true
-    }
-});
-nothing.toStringNative(History, "History");
-
-// location
-Object.defineProperties(Location.prototype, {
-    [Symbol.toStringTag]: {
-        value: "Location",
-        configurable: true
-    }
-});
-nothing.toStringNative(Location, "Location");
-
-// document
 Object.defineProperties(HTMLDocument.prototype, {
     [Symbol.toStringTag]: {
         value: "HTMLDocument",
@@ -599,12 +459,348 @@ nothing.toStringNative(Document, "Document");
 nothing.toStringNative(Node, "Node");
 nothing.toStringNative(HTMLDocument, "HTMLDocument");
 
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\EventTarget.js
+function EventTarget() {};
+
+Object.defineProperties(EventTarget.prototype, {
+    [Symbol.toStringTag]: {
+        value: "EventTarget",
+        configurable: true
+    }
+})
+nothing.toStringNative(EventTarget, "EventTarget");
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\history.js
+function History() 
+{ 
+    nothing.addLog("History 被 new 了，报错，可能是查看堆栈检测。");
+    throw new TypeError("Illegal constructor");
+};
+
+var history = {};
+history.__proto__ = History.prototype;
+
+Object.defineProperties(History.prototype, {
+    [Symbol.toStringTag]: {
+        value: "History",
+        configurable: true
+    }
+});
+nothing.toStringNative(History, "History");
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\localStorage.js
+function Storage() 
+{ 
+    nothing.addLog("Storage 被 new 了，报错，可能是查看堆栈检测。");
+    throw new TypeError("Illegal constructor");
+};
+
+var localStorage = {};
+localStorage.__proto__ = Storage.prototype;
+
+Object.defineProperties(Storage.prototype, {
+    [Symbol.toStringTag]: {
+        value: "Storage",
+        configurable: true
+    }
+});
+nothing.toStringNative(Storage, "Storage");
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\location.js
+function Location()
+{
+    nothing.addLog("Location 被 new 了，报错，可能是查看堆栈检测。");
+    throw new TypeError("Illegal constructor");
+};
+
+var location = {};
+location.__proto__ = Location.prototype;
+
+Object.defineProperties(Location.prototype, {
+    [Symbol.toStringTag]: {
+        value: "Location",
+        configurable: true
+    }
+});
+nothing.toStringNative(Location, "Location");
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\navigation.js
+function Navigation() 
+{ 
+    nothing.addLog("Navigation 被 new 了，报错，可能是查看堆栈检测。");
+    throw new TypeError("Illegal constructor");
+};
+
+var navigation = {};
+navigation.__proto__ = Navigation.prototype;
+Navigation.prototype.__proto__ = EventTarget.prototype;
+
+Object.defineProperties(Navigation.prototype, {
+    [Symbol.toStringTag]: {
+        value: "Navigation",
+        configurable: true
+    }
+});
+nothing.toStringNative(Navigation, "Navigation");
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\navigator.js
+function Navigator() 
+{ 
+    nothing.addLog("Navigator 被 new 了，报错，可能是查看堆栈检测。");
+    throw new TypeError("Illegal constructor");
+};
+
+// 不能用 let
+var navigator = {};
+navigator.__proto__ = Navigator.prototype;
+
+Object.defineProperties(Navigator.prototype, {
+    [Symbol.toStringTag]: {
+        value: "Navigator",
+        configurable: true
+    }
+});
+nothing.toStringNative(Navigator, "Navigator");
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\plugin.js
+function Plugin() 
+{ 
+    nothing.addLog("Plugin 被 new 了，报错，可能是查看堆栈检测。");
+    throw new TypeError("Illegal constructor");
+};
+
+function PluginArray() 
+{ 
+    nothing.addLog("PluginArray 被 new 了，报错，可能是查看堆栈检测。");
+    throw new TypeError("Illegal constructor");
+};
+
+function MimeType() 
+{ 
+    nothing.addLog("MimeType 被 new 了，报错，可能是查看堆栈检测。");
+    throw new TypeError("Illegal constructor");
+};
+
+function MimeTypeArray() 
+{ 
+    nothing.addLog("MimeTypeArray 被 new 了，报错，可能是查看堆栈检测。");
+    throw new TypeError("Illegal constructor");
+};
+
+navigator.plugins = {};
+navigator.mimeTypes = {};
+navigator.plugins.__proto__ = PluginArray.prototype;
+navigator.mimeTypes.__proto__ = MimeTypeArray.prototype;
+
+Object.defineProperties(Plugin.prototype, {
+    [Symbol.toStringTag]: {
+        value: "Plugin",
+        configurable: true
+    }
+});
+Object.defineProperties(MimeType.prototype, {
+    [Symbol.toStringTag]: {
+        value: "MimeType",
+        configurable: true
+    },
+});
+Object.defineProperties(PluginArray.prototype, {
+    [Symbol.toStringTag]: {
+        value: "PluginArray",
+        configurable: true
+    }
+});
+Object.defineProperties(MimeTypeArray.prototype, {
+    [Symbol.toStringTag]: {
+        value: "MimeTypeArray",
+        configurable: true
+    }
+});
+nothing.toStringNative(Plugin, "Plugin");
+nothing.toStringNative(MimeType, "MimeType");
+nothing.toStringNative(PluginArray, "PluginArray");
+nothing.toStringNative(MimeTypeArray, "MimeTypeArray");
+
+// 补充方法（无法像 envProxy, toStringNative... 这些函数那样，写在文件的最开头）。
+
+// 检查是否是某个对象的实例
+nothing.isInstanceOf = (obj, constructor) => {
+    return obj.__proto__ == constructor.prototype;
+}
+// 创建一个 MIME 类型对象
+nothing.newMimeType = (data) => {
+    if (!nothing.isInstanceOf(data.plugin, Plugin)) throw new Error("data.plugin 需要是 Plugin 的实例.");
+    
+    let mime_type = {};
+    mime_type.__proto__ = MimeType.prototype;
+    mime_type.description = data.description;
+    mime_type.suffixes = data.suffixes;
+    mime_type.type = data.type;
+    // plugin 是 nothing.newPlugin 出来的 
+    mime_type.enabledPlugin = data.plugin;
+
+    return mime_type;
+}
+// 创建一个插件对象
+nothing.newPlugin = (data) => {
+    let plugin = {};
+    plugin.__proto__ = Plugin.prototype;
+    plugin.description = data.description;
+    plugin.filename = data.filename
+    plugin.name = data.name;
+
+    // 不检查可以不传 data.mime_types
+    if (data.mime_types)
+    {
+        // 做一个检查
+        if (!Array.isArray(data.mime_types)) throw new Error("需要以数组的形式传入 mime_types.");
+
+        plugin.length = data.mime_types.length;
+        for (let i = 0; i < data.mime_types.length; i++)
+        {
+            let mime_type_data = {
+                "description": data.mime_types[i].description,
+                "suffixes": data.mime_types[i].suffixes,
+                "type": data.mime_types[i].type,
+                "plugin": plugin
+            };
+            let mime_type = nothing.newMimeType(mime_type_data);
+
+            plugin[i] = mime_type;
+            Object.defineProperty(plugin, mime_type.type, {
+                value: mime_type,
+                writable: true
+            });
+        }
+    }
+
+    return plugin;
+}
+// 为 navigator.plugins 添加
+nothing.insert_plugins = (plugin) => {
+    // 做一个检查
+    if (!nothing.isInstanceOf(plugin, Plugin)) throw new Error("plugin 需要是 Plugin 的实例.");
+
+    if (navigator.plugins.length == undefined)
+    {
+        navigator.plugins.length = 1;
+        navigator.plugins[0] = plugin;
+        navigator.plugins[plugin.name] = plugin;
+    }
+    else
+    {
+        // 考虑了重复插入的情况
+        if (navigator.plugins[plugin.name] == undefined)
+        {
+            navigator.plugins[navigator.plugins.length] = plugin;
+            navigator.plugins[plugin.name] = plugin;
+            navigator.plugins.length++;
+        }
+        else 
+        {
+            // 重复插入就替换
+            navigator.plugins[plugin.name] = plugin;
+            for (let i = 0; i < navigator.plugins.length; ++i)
+            {
+                if (navigator.plugins[i].name == plugin.name)
+                {
+                    navigator.plugins[i] = plugin;
+                    break;
+                }
+            }
+        }
+    }
+}
+// 为 navigator.mimeTypes 添加
+nothing.insert_mime_types = (mime_type) => {
+    // 做一个检查
+    if (!nothing.isInstanceOf(mime_type, MimeType)) throw new Error("mime_type 需要是 MimeType 的实例.");
+
+    if (navigator.mimeTypes.length == undefined)
+    {
+        navigator.mimeTypes.length = 1;
+        navigator.mimeTypes[0] = mime_type;
+        navigator.mimeTypes[mime_type.type] = mime_type;
+    }
+    else
+    {
+        // 考虑了重复插入的情况
+        if (navigator.mimeTypes[mime_type.type] == undefined)
+        {
+            navigator.mimeTypes[navigator.mimeTypes.length] = mime_type;
+            navigator.mimeTypes[mime_type.type] = mime_type;
+            navigator.mimeTypes.length++;
+        }
+        else 
+        {
+            // 重复插入就替换
+            navigator.mimeTypes[mime_type.type] = mime_type;
+            for (let i = 0; i < navigator.mimeTypes.length; ++i)
+            {
+                if (navigator.mimeTypes[i].type == mime_type.type)
+                {
+                    navigator.mimeTypes[i] = mime_type;
+                    break;
+                }
+            }
+        }
+    }
+}
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\screen.js
+function Screen() 
+{ 
+    nothing.addLog("Screen 被 new 了，报错，可能是查看堆栈检测。");
+    throw new TypeError("Illegal constructor");
+};
+
+var screen = {};
+screen.__proto__ = Screen.prototype;
+Screen.prototype.__proto__ = EventTarget.prototype;
+
+Object.defineProperties(Screen.prototype, {
+    [Symbol.toStringTag]: {
+        value: "Screen",
+        configurable: true
+    }
+});
+nothing.toStringNative(Screen, "Screen");
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\window.js
+let window = globalThis;
+
+function Window() 
+{
+    nothing.addLog("Window 被 new 了，报错，可能是查看堆栈检测。");
+    throw new TypeError("Illegal constructor");
+};
+
+function WindowProperties() {};
+
+window.__proto__ = Window.prototype;
+Window.prototype.__proto__ = WindowProperties.prototype;
+WindowProperties.prototype.__proto__ = EventTarget.prototype;
+
+Object.defineProperties(Window.prototype, {
+    [Symbol.toStringTag]: {
+        value: "Window",
+        configurable: true
+    }
+});
+Object.defineProperties(WindowProperties.prototype, {
+    [Symbol.toStringTag]: {
+        value: "WindowProperties",
+        configurable: true
+    }
+});
+nothing.toStringNative(Window, "Window");
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\supplement\extras.js
+delete global;
+
+WindowProperties = undefined;
+
 // 统一代理
-nothing.init_proxy_object_1 = ["window", "navigator", "localStorage", "screen", "history", "location", "document"];
+nothing.init_proxy_object_1 = [
+    "window", "navigator", "localStorage", "screen", "history", "location", "document", "navigation", "navigator.plugins", 
+    "navigator.mimeTypes",
+];
 nothing.init_proxy_object_2 = [
     "EventTarget", "Window", "Navigator", "Storage", "Screen", "History", "Location", "HTMLDocument", "Node", "Document",
+    "Navigation", "Plugin", "PluginArray", "MimeType", "MimeTypeArray",
 ];
-for (let obj of nothing.init_proxy_object_1)
+for (let obj of [...nothing.init_proxy_object_1, ...nothing.init_proxy_object_2])
 {
     eval(`${obj} = nothing.envProxy(${obj}, "${obj}");`)
 }
@@ -612,15 +808,59 @@ for (let obj of nothing.init_proxy_object_1)
 // 要写在代理后
 window.window = window;
 window.self = window;
-
-
-// file path: E:\ning\code\Reverse\WEB\EnvBridge\supplement\env.js
-
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\supplement\divEnv.js
+// 收集了几个 plugins mimeTypes 的信息，可以照着写（这里只是添加信息，还需要 new 出来，应该会写个脚本，取浏览器自动获取）。
+nothing.memory.plugins = [
+    {
+        description: "Portable Document Format",
+        filename: "internal-pdf-viewer",
+        name: "PDF Viewer",
+    },
+    {
+        description: "Portable Document Format",
+        filename: "internal-pdf-viewer",
+        name: "Chrome PDF Viewer",
+    },
+    {
+        description: "Portable Document Format",
+        filename: "internal-pdf-viewer",
+        name: "Chromium PDF Viewer",
+    },
+]
+nothing.memory.mime_types = [
+    {
+        description: "Portable Document Format",
+        suffixes: "pdf",
+        type: "application/pdf",
+    },
+    {
+        description: "Portable Document Format",
+        suffixes: "pdf",
+        type: "text/pdf",
+    },
+]
+// navigator.plugins
+for (let i = 0; i < nothing.memory.plugins.length; i++)
+{
+    let tmp = nothing.memory.plugins[i];
+    // 注意并不是所有的 nothing.memory.mime_types 都要赋值上，一般是选一个或几个
+    tmp.mime_types = nothing.memory.mime_types;
+    nothing.insert_plugins(nothing.newPlugin(tmp));
+}
+// navigator.mimeTypes
+for (let i = 0; i < nothing.memory.mime_types.length; i++)
+{
+    let tmp = nothing.memory.mime_types[i];
+    // 某一个 plugin
+    tmp.plugin = navigator.plugins[0];
+    nothing.insert_mime_types(nothing.newMimeType(tmp));
+}
 
 
 // 最后在开启日志
 debugger;
-nothing.is_proxy = true;
+nothing.is_hook_proxyhandler = true;
+
 // file path: E:\ning\code\Reverse\WEB\EnvBridge\examples\shape.js
 (function N(Yd, YY, YR, I) {
 	var YK = ReferenceError,

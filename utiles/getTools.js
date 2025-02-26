@@ -14,7 +14,8 @@ function addDecorator(code, obj_name, target_name)
 
     return new_code;
 }
-// 传入唯一暴露对象的名字
+
+// 获取方便补环境的工具代码，传入唯一暴露对象的名字和配置对象
 function getTools(obj_name, init_config)
 {
     // 配置比较少就写在这了

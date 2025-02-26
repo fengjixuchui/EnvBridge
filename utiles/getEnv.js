@@ -2,6 +2,7 @@ const path = require('path');
 
 const { readJsFile, readJsFiles, isJsFile } = require("./readFile");
 
+// 获取环境代码
 function getEnv(obj_name)
 {
     let code = "";
@@ -17,9 +18,9 @@ function getEnv(obj_name)
     // }
 
     code += readJsFile(path.resolve(__dirname, "..", "supplement", "extras.js"));
-    code += readJsFile(path.resolve(__dirname, "..", "supplement", "env.js"));
+    code += readJsFile(path.resolve(__dirname, "..", "supplement", "divEnv.js"));
 
-    // 为了支持一件改名，将环境代码中 __obj 替换
+    // 为了支持一件改名。将环境代码中 __obj 替换
     code = code.replace(/__obj/g, obj_name);
 
     return code;

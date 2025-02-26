@@ -1,40 +1,3 @@
-# web 逆向的补环境框架
-当我遇见 shape 才醒悟：web 端，补环境才是最终的答案。
-
-# 命名规范
-变量：下划线命名法；函数：小驼峰命名法；类：大驼峰命名法
-
-# 文件结构
-## baseEnv
-存放可以写死的环境代码，即便换网站也可以不用改动的代码放入其中
-
-## examples
-存放要补环境的代码
-
-## script
-存放一些脚本，方便去浏览器批量获取指纹等
-
-## supplement
-对 baseEnv 进一步补充，存放补环境过程中可能会用到一些工具的代码和自定义代码（extras.js、divEnv.js）
-### extras.js
-呈上启下的中间层
-### divEnv.js
-自定义环境，不同的网站会有不同的环境代码。
-
-## utiles
-框架会用到的工具函数
-
-## main.js
-入口，更改配置、拼接代码、运行。
-
-## run.js
-每次运行 main.js 都会生成一份完整代码。
-### run.js 代码分布
-![alt text](image.png)
-
-
-# 创建插件的示例
-```js
 // 收集了几个 plugins mimeTypes 的信息，可以照着写（这里只是添加信息，还需要 new 出来，应该会写个脚本，取浏览器自动获取）。
 __obj.memory.plugins = [
     {
@@ -81,4 +44,8 @@ for (let i = 0; i < __obj.memory.mime_types.length; i++)
     tmp.plugin = navigator.plugins[0];
     __obj.insert_mime_types(nothing.newMimeType(tmp));
 }
-```
+
+
+// 最后再开启 hook
+debugger;
+__obj.is_hook_proxyhandler = true;

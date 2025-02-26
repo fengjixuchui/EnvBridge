@@ -7,3 +7,11 @@ function Navigator()
 // 不能用 let
 var navigator = {};
 navigator.__proto__ = Navigator.prototype;
+
+Object.defineProperties(Navigator.prototype, {
+    [Symbol.toStringTag]: {
+        value: "Navigator",
+        configurable: true
+    }
+});
+__obj.toStringNative(Navigator, "Navigator");

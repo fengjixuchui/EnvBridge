@@ -7,3 +7,11 @@ function Screen()
 var screen = {};
 screen.__proto__ = Screen.prototype;
 Screen.prototype.__proto__ = EventTarget.prototype;
+
+Object.defineProperties(Screen.prototype, {
+    [Symbol.toStringTag]: {
+        value: "Screen",
+        configurable: true
+    }
+});
+__obj.toStringNative(Screen, "Screen");

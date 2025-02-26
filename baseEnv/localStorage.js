@@ -6,3 +6,11 @@ function Storage()
 
 var localStorage = {};
 localStorage.__proto__ = Storage.prototype;
+
+Object.defineProperties(Storage.prototype, {
+    [Symbol.toStringTag]: {
+        value: "Storage",
+        configurable: true
+    }
+});
+__obj.toStringNative(Storage, "Storage");
