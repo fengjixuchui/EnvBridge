@@ -7,3 +7,6 @@
 **baseEnv 放一些基本的环境代码**
 
 **divEnv.js 中放你补充的环境**
+
+
+copy(nothing.history)

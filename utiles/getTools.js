@@ -6,24 +6,19 @@ const { readJsFile, readJsFiles, isJsFile } = require("./readFile");
 function addDecorator(code, obj_name, target_name)
 {
     let new_code = "";
-    new_code += ";(function (obj)\n{\n";
+    new_code += ";(function (__obj)\n{\n";
     new_code += code;
     new_code += '\n';
-    new_code += `obj.${target_name} = ${target_name};\n`;
+    new_code += `__obj.${target_name} = ${target_name};\n`;
     new_code += `\n})(${obj_name});\n`;
 
     return new_code;
 }
 // 传入唯一暴露对象的名字
-function getTools(obj_name)
+function getTools(obj_name, init_config)
 {
     // 配置比较少就写在这了
-    let code = `let ${obj_name} = {
-    history: "",
-    is_proxy: true,
-    is_print: true,
-    memory: {},
-};`;
+    let code = `let ${obj_name} = ${JSON.stringify(init_config)};\n`;
 
     let file_names = ["toStringNative", "stringify", "envProxy", "addLog"];
 

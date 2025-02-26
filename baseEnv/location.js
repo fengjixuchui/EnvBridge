@@ -1,0 +1,8 @@
+function Location()
+{
+    __obj.addLog("Location 被 new 了，报错，可能是查看堆栈检测。");
+    throw new TypeError("Illegal constructor");
+};
+
+var location = {};
+location.__proto__ = Location.prototype;

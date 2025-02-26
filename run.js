@@ -1,8 +1,5 @@
-let nothing = {
-    history: "",
-    is_proxy: true,
-    is_print: true
-};;(function (obj)
+let nothing = {"history":"","is_proxy":false,"is_print":true,"is_test":true,"memory":{}};
+;(function (__obj)
 {
 // file path: E:\ning\code\Reverse\WEB\EnvBridge\supplement\toStringNative.js
 // 新的 toString
@@ -38,10 +35,10 @@ setProperty(Function.prototype, "toString", newToString);
 toStringNative(Function.prototype.toString, "toString");
 
 
-obj.toStringNative = toStringNative
+__obj.toStringNative = toStringNative;
 
 })(nothing);
-;(function (obj)
+;(function (__obj)
 {
 // file path: E:\ning\code\Reverse\WEB\EnvBridge\supplement\stringify.js
 /**说明
@@ -201,10 +198,10 @@ function stringify(variable, lengthLimit = 50, isRemoveEmpty = true, seen = new 
     }
 }
 
-obj.stringify = stringify
+__obj.stringify = stringify;
 
 })(nothing);
-;(function (obj)
+;(function (__obj)
 {
 // file path: E:\ning\code\Reverse\WEB\EnvBridge\supplement\envProxy.js
 // 创建一个代理对象，用于拦截并处理对象的属性访问。
@@ -385,51 +382,245 @@ function _proxyHandleTemplate(name, mode, target, property, args, callBackFunc) 
 
 function envProxy(proxyObject, name)
 {
-    if (obj["is_proxy"]) return proxyObject;
-    else 
-    {
-        let callBackFunc = (name, mode, target, property, value) => { 
-            let content = obj["stringify"](value, 20, false);
-            let text = `${name} property: ${property} value: ${content}\r\n`;
+    let callBackFunc = (name, mode, target, property, value) => { 
+        if (!__obj["is_proxy"]) return;
+        // let watches = ["get", "set", "has"];
+        // if (!watches.includes(mode)) return;
 
-            obj["history"] += text;
-            if (obj["is_print"]) console.log(text);
-        }
+        __obj["is_proxy"] = false;
+        let value_ = __obj["stringify"](value, 20, false);
+        let property_ =  __obj["stringify"](property, 20, false);
+        let text = `[${name}] ${mode} property: ${property_} value: ${value_}\r\n`;
+        __obj["is_proxy"] = true;
 
-        return proxy(proxyObject, name, callBackFunc);
+        __obj["history"] += text;
+        if (__obj["is_print"]) console.log(text);
     }
+
+    return proxy(proxyObject, name, callBackFunc);
 }
 
-obj.envProxy = envProxy
+__obj.envProxy = envProxy;
 
 })(nothing);
-;(function (obj)
+;(function (__obj)
 {
 // file path: E:\ning\code\Reverse\WEB\EnvBridge\supplement\addLog.js
 function addLog(text)
 {
-    obj["history"] += text;
-    if (obj["is_print"]) console.log(text);
+    __obj["history"] += text;
+    __obj["history"] += "\n";
+    if (__obj["is_print"]) console.log(text);
 }
 
-obj.addLog = addLog
+__obj.addLog = addLog;
 
 })(nothing);
-// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\window.js
-let window = global;
-window.window = window;
-window.self = window;
-delete global;
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\document.js
+function HTMLDocument() 
+{ 
+    nothing.addLog("HTMLDocument 被 new 了，报错，可能是查看堆栈检测。");
+    throw new TypeError("Illegal constructor");
+};
 
-let Window = function Window() 
+function Node() 
+{ 
+    nothing.addLog("Node 被 new 了，报错，可能是查看堆栈检测。");
+    throw new TypeError("Illegal constructor");
+};
+
+function Document() {};
+
+var document = {};
+document.__proto__ = HTMLDocument.prototype;
+HTMLDocument.prototype.__proto__ = Document.prototype;
+Document.prototype.__proto__ = Node.prototype;
+Node.prototype.__proto__ = EventTarget.prototype;
+
+console.log(EventTarget);
+
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\EventTarget.js
+function EventTarget() {};
+
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\history.js
+function History() 
+{ 
+    nothing.addLog("History 被 new 了，报错，可能是查看堆栈检测。");
+    throw new TypeError("Illegal constructor");
+};
+
+var history = {};
+history.__proto__ = History.prototype;
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\localStorage.js
+function Storage() 
+{ 
+    nothing.addLog("Storage 被 new 了，报错，可能是查看堆栈检测。");
+    throw new TypeError("Illegal constructor");
+};
+
+var localStorage = {};
+localStorage.__proto__ = Storage.prototype;
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\location.js
+function Location()
+{
+    nothing.addLog("Location 被 new 了，报错，可能是查看堆栈检测。");
+    throw new TypeError("Illegal constructor");
+};
+
+var location = {};
+location.__proto__ = Location.prototype;
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\navigator.js
+function Navigator() 
+{ 
+    nothing.addLog("Navigator 被 new 了，报错，可能是查看堆栈检测。");
+    throw new TypeError("Illegal constructor");
+};
+
+// 不能用 let
+var navigator = {};
+navigator.__proto__ = Navigator.prototype;
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\screen.js
+function Screen() 
+{ 
+    nothing.addLog("Screen 被 new 了，报错，可能是查看堆栈检测。");
+    throw new TypeError("Illegal constructor");
+};
+
+var screen = {};
+screen.__proto__ = Screen.prototype;
+Screen.prototype.__proto__ = EventTarget.prototype;
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\window.js
+let window = globalThis;
+
+function Window() 
 {
     nothing.addLog("Window 被 new 了，报错，可能是查看堆栈检测。");
     throw new TypeError("Illegal constructor");
 };
 
+function WindowProperties() {};
 
-// file path: E:\ning\code\Reverse\WEB\EnvBridge\supplement\extrasEnv.js
+window.__proto__ = Window.prototype;
+Window.prototype.__proto__ = WindowProperties.prototype;
+WindowProperties.prototype.__proto__ = EventTarget.prototype;
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\supplement\extras.js
+delete global;
 
+// EventTarget 的修补
+Object.defineProperties(EventTarget.prototype, {
+    [Symbol.toStringTag]: {
+        value: "EventTarget",
+        configurable: true
+    }
+})
+nothing.toStringNative(EventTarget, "EventTarget");
+
+// window 的修补
+Object.defineProperties(Window.prototype, {
+    [Symbol.toStringTag]: {
+        value: "Window",
+        configurable: true
+    }
+});
+Object.defineProperties(WindowProperties.prototype, {
+    [Symbol.toStringTag]: {
+        value: "WindowProperties",
+        configurable: true
+    }
+});
+WindowProperties = undefined;
+nothing.toStringNative(Window, "Window");
+
+// navigator 的修补
+Object.defineProperties(Navigator.prototype, {
+    [Symbol.toStringTag]: {
+        value: "Navigator",
+        configurable: true
+    }
+});
+nothing.toStringNative(Navigator, "Navigator");
+
+// localStorage 的修补
+Object.defineProperties(Storage.prototype, {
+    [Symbol.toStringTag]: {
+        value: "Storage",
+        configurable: true
+    }
+});
+nothing.toStringNative(Storage, "Storage");
+
+// screen 
+Object.defineProperties(Screen.prototype, {
+    [Symbol.toStringTag]: {
+        value: "Screen",
+        configurable: true
+    }
+});
+nothing.toStringNative(Screen, "Screen");
+
+// history
+Object.defineProperties(History.prototype, {
+    [Symbol.toStringTag]: {
+        value: "History",
+        configurable: true
+    }
+});
+nothing.toStringNative(History, "History");
+
+// location
+Object.defineProperties(Location.prototype, {
+    [Symbol.toStringTag]: {
+        value: "Location",
+        configurable: true
+    }
+});
+nothing.toStringNative(Location, "Location");
+
+// document
+Object.defineProperties(HTMLDocument.prototype, {
+    [Symbol.toStringTag]: {
+        value: "HTMLDocument",
+        configurable: true
+    }
+});
+Object.defineProperties(Node.prototype, {
+    [Symbol.toStringTag]: {
+        value: "Node",
+        configurable: true
+    }
+});
+Object.defineProperties(Document.prototype, {
+    [Symbol.toStringTag]: {
+        value: "Document",
+        configurable: true
+    }
+});
+nothing.toStringNative(Document, "Document");
+nothing.toStringNative(Node, "Node");
+nothing.toStringNative(HTMLDocument, "HTMLDocument");
+
+// 统一代理
+nothing.init_proxy_object_1 = ["window", "navigator", "localStorage", "screen", "history", "location", "document"];
+nothing.init_proxy_object_2 = [
+    "EventTarget", "Window", "Navigator", "Storage", "Screen", "History", "Location", "HTMLDocument", "Node", "Document",
+];
+for (let obj of nothing.init_proxy_object_1)
+{
+    eval(`${obj} = nothing.envProxy(${obj}, "${obj}");`)
+}
+
+// 要写在代理后
+window.window = window;
+window.self = window;
+
+
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\supplement\env.js
+
+
+
+// 最后在开启日志
+debugger;
+nothing.is_proxy = true;
 // file path: E:\ning\code\Reverse\WEB\EnvBridge\examples\shape.js
 (function N(Yd, YY, YR, I) {
 	var YK = ReferenceError,

@@ -1,11 +1,13 @@
-let window = global;
-window.window = window;
-window.self = window;
-delete global;
+let window = globalThis;
 
-let Window = function Window() 
+function Window() 
 {
     __obj.addLog("Window 被 new 了，报错，可能是查看堆栈检测。");
     throw new TypeError("Illegal constructor");
 };
 
+function WindowProperties() {};
+
+window.__proto__ = Window.prototype;
+Window.prototype.__proto__ = WindowProperties.prototype;
+WindowProperties.prototype.__proto__ = EventTarget.prototype;

@@ -176,17 +176,20 @@ function _proxyHandleTemplate(name, mode, target, property, args, callBackFunc) 
 
 function envProxy(proxyObject, name)
 {
-    if (obj["is_proxy"]) return proxyObject;
-    else 
-    {
-        let callBackFunc = (name, mode, target, property, value) => { 
-            let content = obj["stringify"](value, 20, false);
-            let text = `${name} property: ${property} value: ${content}\r\n`;
+    let callBackFunc = (name, mode, target, property, value) => { 
+        if (!__obj["is_proxy"]) return;
+        // let watches = ["get", "set", "has"];
+        // if (!watches.includes(mode)) return;
 
-            obj["history"] += text;
-            if (obj["is_print"]) console.log(text);
-        }
+        __obj["is_proxy"] = false;
+        let value_ = __obj["stringify"](value, 20, false);
+        let property_ =  __obj["stringify"](property, 20, false);
+        let text = `[${name}] ${mode} property: ${property_} value: ${value_}\r\n`;
+        __obj["is_proxy"] = true;
 
-        return proxy(proxyObject, name, callBackFunc);
+        __obj["history"] += text;
+        if (__obj["is_print"]) console.log(text);
     }
+
+    return proxy(proxyObject, name, callBackFunc);
 }
