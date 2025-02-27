@@ -46,6 +46,11 @@ for (let i = 0; i < __obj.memory.mime_types.length; i++)
 }
 
 
+debugger
+addEventListener(1, 2, true);
+
 // 最后再开启 hook
 debugger;
 __obj.is_hook_proxyhandler = true;
+
+debugger;

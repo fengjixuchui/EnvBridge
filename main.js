@@ -10,7 +10,7 @@ let code = "";
 // 唯一暴露对象的名字，可以一键改名
 let obj_name = "nothing";
 // 要运行的代码，examples 文件夹中文件名
-let file_name = "test.js";
+let file_name = "shape.js";
 // 配置
 let init_config = {
     is_proxy: true,           

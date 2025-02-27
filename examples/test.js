@@ -13,6 +13,7 @@ function test(str, )
 
 test("window.window == window");
 test("this == window");
+test("globalThis == window");
 
 test("window.toString() == '[object Window]'");
 test("Window.toString() == 'function Window() { [native code] }'");
