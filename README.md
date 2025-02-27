@@ -92,3 +92,5 @@ for (let i = 0; i < __obj.memory.mime_types.length; i++)
     __obj.insert_mime_types(nothing.newMimeType(tmp));
 }
 ```
+
+# 补环境往往是件繁杂的工作，本项目只建成了一个清晰的架构，算是“无敌环境”的第一步，剩下的路要你自己走了......
