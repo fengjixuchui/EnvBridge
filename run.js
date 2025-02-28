@@ -1,7 +1,7 @@
 let nothing = {"is_proxy":true,"is_hook_proxyhandler":false,"is_print":true,"history":"","memory":{}};
 ;(function (__obj)
 {
-// file path: E:\ning\code\Reverse\WEB\EnvBridge\supplement\toStringNative.js
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\tools\toStringNative.js
 // 新的 toString
 function newToString() 
 {
@@ -40,7 +40,7 @@ __obj.toStringNative = toStringNative;
 })(nothing);
 ;(function (__obj)
 {
-// file path: E:\ning\code\Reverse\WEB\EnvBridge\supplement\stringify.js
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\tools\stringify.js
 /**说明
  * 函数和变量均使用小驼峰命名法
  * 数组中的 null、undefined 被剔除了
@@ -203,7 +203,7 @@ __obj.stringify = stringify;
 })(nothing);
 ;(function (__obj)
 {
-// file path: E:\ning\code\Reverse\WEB\EnvBridge\supplement\envProxy.js
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\tools\envProxy.js
 // 创建一个代理对象，用于拦截并处理对象的属性访问。
 function proxy(proxyObject, name, callBackFunc) 
 {
@@ -405,27 +405,43 @@ __obj.envProxy = envProxy;
 })(nothing);
 ;(function (__obj)
 {
-// file path: E:\ning\code\Reverse\WEB\EnvBridge\supplement\addLog.js
-function addLog(text)
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\tools\log.js
+function log(text)
 {
     __obj["history"] += text;
     __obj["history"] += "\n";
     if (__obj["is_print"]) console.log(text);
 }
 
-__obj.addLog = addLog;
+__obj.log = log;
+
+})(nothing);
+;(function (__obj)
+{
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\tools\defineNativeFunc.js
+function defineNativeFunc(obj, prop, func, descriptor = {})
+{
+    if (typeof func != "function") throw new Error("传入的 func 有误.");
+
+    // configurable enumerable writable 默认值全为 true
+    const { configurable = true, enumerable = true, writable = true } = descriptor;
+    descriptor = {
+        configurable, 
+        enumerable,
+        writable,
+        value: func
+    };
+    Object.defineProperty(obj, prop, descriptor);
+    __obj.toStringNative(obj[prop], prop);
+}
+
+__obj.defineNativeFunc = defineNativeFunc;
 
 })(nothing);
 // file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\document.js
 function HTMLDocument() 
 { 
-    nothing.addLog("HTMLDocument 被 new 了，报错，可能是查看堆栈检测。");
-    throw new TypeError("Illegal constructor");
-};
-
-function Node() 
-{ 
-    nothing.addLog("Node 被 new 了，报错，可能是查看堆栈检测。");
+    nothing.log("HTMLDocument 被 new 了，报错，可能是查看堆栈检测。");
     throw new TypeError("Illegal constructor");
 };
 
@@ -435,17 +451,10 @@ var document = {};
 document.__proto__ = HTMLDocument.prototype;
 HTMLDocument.prototype.__proto__ = Document.prototype;
 Document.prototype.__proto__ = Node.prototype;
-Node.prototype.__proto__ = EventTarget.prototype;
 
 Object.defineProperties(HTMLDocument.prototype, {
     [Symbol.toStringTag]: {
         value: "HTMLDocument",
-        configurable: true
-    }
-});
-Object.defineProperties(Node.prototype, {
-    [Symbol.toStringTag]: {
-        value: "Node",
         configurable: true
     }
 });
@@ -456,9 +465,66 @@ Object.defineProperties(Document.prototype, {
     }
 });
 nothing.toStringNative(Document, "Document");
-nothing.toStringNative(Node, "Node");
 nothing.toStringNative(HTMLDocument, "HTMLDocument");
 
+/**
+ * 方法实现
+ */
+nothing.defineNativeFunc(Document.prototype, "createEvent", 
+    function createEvent(event_type) 
+    {
+    let enent = {};
+    switch (event_type) 
+    {
+        case 'CustomEvent':
+            enent.__proto__ = CustomEvent.prototype;
+            break;
+    
+        default:
+            debugger;
+    }
+
+    return enent;
+    }
+)
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\event\CustomEvent.js
+function CustomEvent() 
+{ 
+    nothing.log("CustomEvent 被 new 了，报错，可能是查看堆栈检测。");
+    throw new TypeError("Illegal constructor");
+};
+
+Object.defineProperties(CustomEvent.prototype, {
+    [Symbol.toStringTag]: {
+        value: "CustomEvent",
+        configurable: true
+    }
+});
+nothing.toStringNative(CustomEvent, "CustomEvent");
+
+/**
+ * 方法实现
+ */
+nothing.defineNativeFunc(CustomEvent.prototype, "initCustomEvent", 
+    function initCustomEvent(type, can_bubble, can_celable, detail)
+    {
+
+    }
+)
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\event\Event.js
+function Event() 
+{ 
+    nothing.log("Event 被 new 了，报错，可能是查看堆栈检测。");
+    throw new TypeError("Illegal constructor");
+};
+
+Object.defineProperties(Event.prototype, {
+    [Symbol.toStringTag]: {
+        value: "Event",
+        configurable: true
+    }
+});
+nothing.toStringNative(Event, "Event");
 // file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\EventTarget.js
 function EventTarget() {};
 
@@ -474,143 +540,140 @@ nothing.toStringNative(EventTarget, "EventTarget");
 nothing.memory.event_listeners = {};
 nothing.memory.event_listeners_instance_map = new Map();
 
-// 补充 addEventListener removeEventListener dispatchEvent 方法
-EventTarget.prototype.addEventListener = function addEventListener(type, listener, options = false)
-{
-    // 处理默认参数
-    const { capture = false, once = false, passive = false, signal } = typeof options === 'object' ? options : { capture: options };
-    if (passive) nothing.addLog("addEventListener: 默认参数的 passive 设置为了 true,可能是检测.");
+// 实现不完全，没搞懂事件模型，先搁置
+// // 补充 addEventListener removeEventListener dispatchEvent 方法
+// EventTarget.prototype.addEventListener = function addEventListener(type, listener, options = false)
+// {
+//     // 处理默认参数
+//     const { capture = false, once = false, passive = false, signal } = typeof options === 'object' ? options : { capture: options };
+//     if (passive) nothing.log("addEventListener: 默认参数的 passive 设置为了 true,可能是检测.");
     
-    // 全局调用与示例调用区分
-    let  event_listeners;
-    if (this == nothing.memory.this) event_listeners = nothing.memory.event_listeners;
-    else 
-    {
-        if (nothing.memory.event_listeners_instance_map.has(this))
-        {
-            event_listeners = nothing.memory.event_listeners_instance_map.get(this);
-        }
-        else 
-        {
-            event_listeners = {};
-            nothing.memory.event_listeners_instance_map.set(this, event_listeners);
-        }
-    }
-    // 实现
-    if (!event_listeners[type])
-    {
-        event_listeners[type] = { capture: [], bubble: [] };
-    }
+//     // 全局调用与示例调用区分
+//     let  event_listeners;
+//     if (this == nothing.memory.this) event_listeners = nothing.memory.event_listeners;
+//     else 
+//     {
+//         if (nothing.memory.event_listeners_instance_map.has(this))
+//         {
+//             event_listeners = nothing.memory.event_listeners_instance_map.get(this);
+//         }
+//         else 
+//         {
+//             event_listeners = {};
+//             nothing.memory.event_listeners_instance_map.set(this, event_listeners);
+//         }
+//     }
+//     // 实现
+//     if (!event_listeners[type])
+//     {
+//         event_listeners[type] = { capture: [], bubble: [] };
+//     }
 
-    const list = event_listeners[type][capture ? 'capture' : 'bubble'];
-    const listener_object = { listener, once, passive, capture };
+//     const list = event_listeners[type][capture ? 'capture' : 'bubble'];
+//     const listener_object = { listener, once, passive, capture };
 
-    // 没有相同的 listener 就加入内存中
-    if (!list.some(l => l.listener === listener))
-    {
-        list.push(listener_object);
-        // 如果提供了 AbortSignal，监听 abort 事件来移除监听器
-        if (signal)
-        {
-            signal.addEventListener('abort', () => {
-                this.removeEventListener(type, listener, { capture });
-            });
-        }
-    }
-}
-EventTarget.prototype.removeEventListener = function removeEventListener(type, listener, options = false)
-{
-     // 处理默认参数
-    const { capture = false } = typeof options === 'object' ? options : { capture: options };
-    // 全局调用与示例调用区分
-    let  event_listeners;
-    if (this == nothing.memory.this) event_listeners = nothing.memory.event_listeners;
-    else 
-    {
-        if (nothing.memory.event_listeners_instance_map.has(this))
-        {
-            event_listeners = nothing.memory.event_listeners_instance_map.get(this);
-        }
-        else 
-        {
-            nothing.addLog("removeEventListener: 删除了一个未注册的事件,可能是检测.");
-            return;
-        }
-    }
-    // 检查
-    if (!event_listeners[type]) 
-    {
-        nothing.addLog("removeEventListener: 删除了一个未注册的事件,可能是检测.");
-        return;
-    }
+//     // 没有相同的 listener 就加入内存中
+//     if (!list.some(l => l.listener === listener))
+//     {
+//         list.push(listener_object);
+//         // 如果提供了 AbortSignal，监听 abort 事件来移除监听器
+//         if (signal)
+//         {
+//             signal.addEventListener('abort', () => {
+//                 this.removeEventListener(type, listener, { capture });
+//             });
+//         }
+//     }
+// }
+// EventTarget.prototype.removeEventListener = function removeEventListener(type, listener, options = false)
+// {
+//      // 处理默认参数
+//     const { capture = false } = typeof options === 'object' ? options : { capture: options };
+//     // 全局调用与示例调用区分
+//     let  event_listeners;
+//     if (this == nothing.memory.this) event_listeners = nothing.memory.event_listeners;
+//     else 
+//     {
+//         if (nothing.memory.event_listeners_instance_map.has(this))
+//         {
+//             event_listeners = nothing.memory.event_listeners_instance_map.get(this);
+//         }
+//         else 
+//         {
+//             nothing.log("removeEventListener: 删除了一个未注册的事件,可能是检测.");
+//             return;
+//         }
+//     }
+//     // 检查
+//     if (!event_listeners[type]) 
+//     {
+//         nothing.log("removeEventListener: 删除了一个未注册的事件,可能是检测.");
+//         return;
+//     }
 
-    const list = event_listeners[type][capture ? 'capture' : 'bubble'] || [];
-    // 检查
-    if (list.length == 0) 
-    {
-        nothing.addLog("removeEventListener: 删除了一个未注册的事件,可能是检测.");
-        return;
-    }
-    event_listeners[type][capture ? 'capture' : 'bubble'] = list.filter(l => l.listener !== listener);
-}
-EventTarget.prototype.dispatchEvent = function dispatchEvent(event)
-{
-    const { type, target, cancelable } = event;
-    // 全局调用与示例调用区分
-    let  event_listeners;
-    if (this == nothing.memory.this) event_listeners = nothing.memory.event_listeners;
-    else 
-    {
-        if (nothing.memory.event_listeners_instance_map.has(this))
-        {
-            event_listeners = nothing.memory.event_listeners_instance_map.get(this);
-        }
-        else 
-        {
-            nothing.addLog("dispatchEvent: 触发了一个未注册的事件,可能是检测.");
-            return;
-        }
-    }
+//     const list = event_listeners[type][capture ? 'capture' : 'bubble'] || [];
+//     // 检查
+//     if (list.length == 0) 
+//     {
+//         nothing.log("removeEventListener: 删除了一个未注册的事件,可能是检测.");
+//         return;
+//     }
+//     event_listeners[type][capture ? 'capture' : 'bubble'] = list.filter(l => l.listener !== listener);
+// }
+// EventTarget.prototype.dispatchEvent = function dispatchEvent(event)
+// {
+//     const { type, target, cancelable } = event;
+//     // 全局调用与示例调用区分
+//     let  event_listeners;
+//     if (this == nothing.memory.this) event_listeners = nothing.memory.event_listeners;
+//     else 
+//     {
+//         if (nothing.memory.event_listeners_instance_map.has(this))
+//         {
+//             event_listeners = nothing.memory.event_listeners_instance_map.get(this);
+//         }
+//         else 
+//         {
+//             nothing.log("dispatchEvent: 触发了一个未注册的事件,可能是检测.");
+//             return;
+//         }
+//     }
 
-    const listeners = event_listeners[type];
-    if (!listeners) return true;
+//     const listeners = event_listeners[type];
+//     if (!listeners) return true;
 
-    let defaultPrevented = false;
-    const handleEvent = (list, event) => {
-        for (const listenerObject of list) 
-        {
-            if (listenerObject.once) 
-                this.removeEventListener(type, listenerObject.listener, { capture: listenerObject.capture });
+//     let defaultPrevented = false;
+//     const handleEvent = (list, event) => {
+//         for (const listenerObject of list) 
+//         {
+//             if (listenerObject.once) 
+//                 this.removeEventListener(type, listenerObject.listener, { capture: listenerObject.capture });
             
 
-            if (!listenerObject.passive && event.preventDefault) 
-            {
-                event.preventDefault = () => {
-                    defaultPrevented = true;
-                };
-            }
+//             if (!listenerObject.passive && event.preventDefault) 
+//             {
+//                 event.preventDefault = () => {
+//                     defaultPrevented = true;
+//                 };
+//             }
 
-            try {
-                listenerObject.listener.call(target, event);
-            } catch (error) {
-                console.error('Error in event listener:', error);
-            }
-        }
-    };
+//             listenerObject.listener.call(target, event);
+//         }
+//     };
 
-    // 捕获阶段
-    if (listeners.capture) handleEvent(listeners.capture, event);
+//     // 捕获阶段
+//     if (listeners.capture) handleEvent(listeners.capture, event);
 
-    // 目标阶段
-    if (listeners.bubble) handleEvent(listeners.bubble, event);
+//     // 目标阶段
+//     if (listeners.bubble) handleEvent(listeners.bubble, event);
 
-    return !defaultPrevented || !cancelable;
-}
+//     return !(cancelable && defaultPrevented);
+// }
 
 // file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\history.js
 function History() 
 { 
-    nothing.addLog("History 被 new 了，报错，可能是查看堆栈检测。");
+    nothing.log("History 被 new 了，报错，可能是查看堆栈检测。");
     throw new TypeError("Illegal constructor");
 };
 
@@ -627,7 +690,7 @@ nothing.toStringNative(History, "History");
 // file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\localStorage.js
 function Storage() 
 { 
-    nothing.addLog("Storage 被 new 了，报错，可能是查看堆栈检测。");
+    nothing.log("Storage 被 new 了，报错，可能是查看堆栈检测。");
     throw new TypeError("Illegal constructor");
 };
 
@@ -644,7 +707,7 @@ nothing.toStringNative(Storage, "Storage");
 // file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\location.js
 function Location()
 {
-    nothing.addLog("Location 被 new 了，报错，可能是查看堆栈检测。");
+    nothing.log("Location 被 new 了，报错，可能是查看堆栈检测。");
     throw new TypeError("Illegal constructor");
 };
 
@@ -661,7 +724,7 @@ nothing.toStringNative(Location, "Location");
 // file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\navigation.js
 function Navigation() 
 { 
-    nothing.addLog("Navigation 被 new 了，报错，可能是查看堆栈检测。");
+    nothing.log("Navigation 被 new 了，报错，可能是查看堆栈检测。");
     throw new TypeError("Illegal constructor");
 };
 
@@ -679,7 +742,7 @@ nothing.toStringNative(Navigation, "Navigation");
 // file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\navigator.js
 function Navigator() 
 { 
-    nothing.addLog("Navigator 被 new 了，报错，可能是查看堆栈检测。");
+    nothing.log("Navigator 被 new 了，报错，可能是查看堆栈检测。");
     throw new TypeError("Illegal constructor");
 };
 
@@ -694,28 +757,44 @@ Object.defineProperties(Navigator.prototype, {
     }
 });
 nothing.toStringNative(Navigator, "Navigator");
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\node\Node.js
+function Node() 
+{ 
+    nothing.log("Node 被 new 了，报错，可能是查看堆栈检测。");
+    throw new TypeError("Illegal constructor");
+};
+
+Node.prototype.__proto__ = EventTarget.prototype;
+
+Object.defineProperties(Node.prototype, {
+    [Symbol.toStringTag]: {
+        value: "Node",
+        configurable: true
+    }
+});
+nothing.toStringNative(Node, "Node");
 // file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\plugin.js
 function Plugin() 
 { 
-    nothing.addLog("Plugin 被 new 了，报错，可能是查看堆栈检测。");
+    nothing.log("Plugin 被 new 了，报错，可能是查看堆栈检测。");
     throw new TypeError("Illegal constructor");
 };
 
 function PluginArray() 
 { 
-    nothing.addLog("PluginArray 被 new 了，报错，可能是查看堆栈检测。");
+    nothing.log("PluginArray 被 new 了，报错，可能是查看堆栈检测。");
     throw new TypeError("Illegal constructor");
 };
 
 function MimeType() 
 { 
-    nothing.addLog("MimeType 被 new 了，报错，可能是查看堆栈检测。");
+    nothing.log("MimeType 被 new 了，报错，可能是查看堆栈检测。");
     throw new TypeError("Illegal constructor");
 };
 
 function MimeTypeArray() 
 { 
-    nothing.addLog("MimeTypeArray 被 new 了，报错，可能是查看堆栈检测。");
+    nothing.log("MimeTypeArray 被 new 了，报错，可能是查看堆栈检测。");
     throw new TypeError("Illegal constructor");
 };
 
@@ -757,7 +836,7 @@ nothing.toStringNative(MimeTypeArray, "MimeTypeArray");
 // file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\screen.js
 function Screen() 
 { 
-    nothing.addLog("Screen 被 new 了，报错，可能是查看堆栈检测。");
+    nothing.log("Screen 被 new 了，报错，可能是查看堆栈检测。");
     throw new TypeError("Illegal constructor");
 };
 
@@ -777,7 +856,7 @@ let window = globalThis;
 
 function Window() 
 {
-    nothing.addLog("Window 被 new 了，报错，可能是查看堆栈检测。");
+    nothing.log("Window 被 new 了，报错，可能是查看堆栈检测。");
     throw new TypeError("Illegal constructor");
 };
 
@@ -800,30 +879,15 @@ Object.defineProperties(WindowProperties.prototype, {
     }
 });
 nothing.toStringNative(Window, "Window");
-// file path: E:\ning\code\Reverse\WEB\EnvBridge\supplement\extras.js
-delete global;
-
-WindowProperties = undefined;
-
-// 补充方法（依赖环境的方法，无法像 envProxy, toStringNative... 这些函数那样，写在文件的最开头）。
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\supplementEnv\helpFunc.js
+/**
+ * 补充方法（依赖环境的方法，无法像 envProxy, toStringNative... 这些函数那样，写在文件的最开头）。
+ */
 // 检查是否是某个对象的实例
 nothing.isInstanceOf = (obj, constructor) => {
     return obj.__proto__ == constructor.prototype;
 }
-// 创建一个 MIME 类型对象
-nothing.newMimeType = (data) => {
-    if (!nothing.isInstanceOf(data.plugin, Plugin)) throw new Error("data.plugin 需要是 Plugin 的实例.");
-    
-    let mime_type = {};
-    mime_type.__proto__ = MimeType.prototype;
-    mime_type.description = data.description;
-    mime_type.suffixes = data.suffixes;
-    mime_type.type = data.type;
-    // plugin 是 nothing.newPlugin 出来的 
-    mime_type.enabledPlugin = data.plugin;
 
-    return mime_type;
-}
 // 创建一个插件对象
 nothing.newPlugin = (data) => {
     let plugin = {};
@@ -858,6 +922,21 @@ nothing.newPlugin = (data) => {
     }
 
     return plugin;
+}
+
+// 创建一个 MIME 类型对象
+nothing.newMimeType = (data) => {
+    if (!nothing.isInstanceOf(data.plugin, Plugin)) throw new Error("data.plugin 需要是 Plugin 的实例.");
+    
+    let mime_type = {};
+    mime_type.__proto__ = MimeType.prototype;
+    mime_type.description = data.description;
+    mime_type.suffixes = data.suffixes;
+    mime_type.type = data.type;
+    // plugin 是 nothing.newPlugin 出来的 
+    mime_type.enabledPlugin = data.plugin;
+
+    return mime_type;
 }
 // 为 navigator.plugins 添加
 nothing.insert_plugins = (plugin) => {
@@ -930,6 +1009,10 @@ nothing.insert_mime_types = (mime_type) => {
     }
 }
 
+
+/**
+ * 一些零散的代码
+ */
 // 统一代理
 nothing.init_proxy_object_1 = [
     "window", "navigator", "localStorage", "screen", "history", "location", "document", "navigation", "navigator.plugins", 
@@ -937,7 +1020,7 @@ nothing.init_proxy_object_1 = [
 ];
 nothing.init_proxy_object_2 = [
     "EventTarget", "Window", "Navigator", "Storage", "Screen", "History", "Location", "HTMLDocument", "Node", "Document",
-    "Navigation", "Plugin", "PluginArray", "MimeType", "MimeTypeArray",
+    "Navigation", "Plugin", "PluginArray", "MimeType", "MimeTypeArray", "Event",
 ];
 
 if (nothing.is_proxy)
@@ -948,6 +1031,8 @@ if (nothing.is_proxy)
     }
 }
 
+delete global;
+WindowProperties = undefined;
 // 要写在代理后
 window.window = window;
 window.self = window;
@@ -955,8 +1040,7 @@ globalThis = window;
 // this 没法改，偷偷存一个
 // this = window; 
 nothing.memory.this = this;
-// file path: E:\ning\code\Reverse\WEB\EnvBridge\supplement\divEnv.js
-// 收集了几个 plugins mimeTypes 的信息，可以照着写（这里只是添加信息，还需要 new 出来，应该会写个脚本，取浏览器自动获取）。
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\supplementEnv\customFingerprint.js
 nothing.memory.plugins = [
     {
         description: "Portable Document Format",
@@ -998,20 +1082,38 @@ for (let i = 0; i < nothing.memory.plugins.length; i++)
 for (let i = 0; i < nothing.memory.mime_types.length; i++)
 {
     let tmp = nothing.memory.mime_types[i];
-    // 某一个 plugin
     tmp.plugin = navigator.plugins[0];
     nothing.insert_mime_types(nothing.newMimeType(tmp));
 }
 
+EventTarget.prototype.addEventListener = function addEventListener(type, listener, options)
+{
+    if (options != undefined) debugger;
 
-debugger
-addEventListener(1, 2, true);
+    // 全局调用与示例调用区分
+    let  event_listeners;
+    if (this == nothing.memory.this) event_listeners = nothing.memory.event_listeners;
+    else 
+    {
+        if (nothing.memory.event_listeners_instance_map.has(this))
+        {
+            event_listeners = nothing.memory.event_listeners_instance_map.get(this);
+        }
+        else 
+        {
+            event_listeners = {};
+            nothing.memory.event_listeners_instance_map.set(this, event_listeners);
+        }
+    }
+
+    event_listeners[type] = listener;
+}
+
+
 
 // 最后再开启 hook
 debugger;
-nothing.is_hook_proxyhandler = true;
-
-debugger;
+// nothing.is_hook_proxyhandler = true;
 // file path: E:\ning\code\Reverse\WEB\EnvBridge\examples\shape.js
 (function N(Yd, YY, YR, I) {
 	var YK = ReferenceError,
@@ -5920,4 +6022,4 @@ debugger;
 	c.setAttribute("id", "_imp_apg_dip_");
 	c.setAttribute("_imp_apg_cid_", "sed-southwest-3fcbdcfb");
 	n.parentNode.insertBefore(c, n)
-}()
+}();

@@ -1,4 +1,3 @@
-// 收集了几个 plugins mimeTypes 的信息，可以照着写（这里只是添加信息，还需要 new 出来，应该会写个脚本，取浏览器自动获取）。
 __obj.memory.plugins = [
     {
         description: "Portable Document Format",
@@ -40,17 +39,35 @@ for (let i = 0; i < __obj.memory.plugins.length; i++)
 for (let i = 0; i < __obj.memory.mime_types.length; i++)
 {
     let tmp = __obj.memory.mime_types[i];
-    // 某一个 plugin
     tmp.plugin = navigator.plugins[0];
     __obj.insert_mime_types(nothing.newMimeType(tmp));
 }
 
+EventTarget.prototype.addEventListener = function addEventListener(type, listener, options)
+{
+    if (options != undefined) debugger;
 
-debugger
-addEventListener(1, 2, true);
+    // 全局调用与示例调用区分
+    let  event_listeners;
+    if (this == nothing.memory.this) event_listeners = __obj.memory.event_listeners;
+    else 
+    {
+        if (__obj.memory.event_listeners_instance_map.has(this))
+        {
+            event_listeners = __obj.memory.event_listeners_instance_map.get(this);
+        }
+        else 
+        {
+            event_listeners = {};
+            __obj.memory.event_listeners_instance_map.set(this, event_listeners);
+        }
+    }
+
+    event_listeners[type] = listener;
+}
+
+
 
 // 最后再开启 hook
 debugger;
-__obj.is_hook_proxyhandler = true;
-
-debugger;
+// __obj.is_hook_proxyhandler = true;

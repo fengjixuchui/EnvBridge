@@ -1,6 +1,6 @@
 function Storage() 
 { 
-    __obj.addLog("Storage 被 new 了，报错，可能是查看堆栈检测。");
+    __obj.log("Storage 被 new 了，报错，可能是查看堆栈检测。");
     throw new TypeError("Illegal constructor");
 };
 

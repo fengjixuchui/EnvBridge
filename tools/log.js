@@ -1,4 +1,4 @@
-function addLog(text)
+function log(text)
 {
     __obj["history"] += text;
     __obj["history"] += "\n";

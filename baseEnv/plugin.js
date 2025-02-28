@@ -1,24 +1,24 @@
 function Plugin() 
 { 
-    __obj.addLog("Plugin 被 new 了，报错，可能是查看堆栈检测。");
+    __obj.log("Plugin 被 new 了，报错，可能是查看堆栈检测。");
     throw new TypeError("Illegal constructor");
 };
 
 function PluginArray() 
 { 
-    __obj.addLog("PluginArray 被 new 了，报错，可能是查看堆栈检测。");
+    __obj.log("PluginArray 被 new 了，报错，可能是查看堆栈检测。");
     throw new TypeError("Illegal constructor");
 };
 
 function MimeType() 
 { 
-    __obj.addLog("MimeType 被 new 了，报错，可能是查看堆栈检测。");
+    __obj.log("MimeType 被 new 了，报错，可能是查看堆栈检测。");
     throw new TypeError("Illegal constructor");
 };
 
 function MimeTypeArray() 
 { 
-    __obj.addLog("MimeTypeArray 被 new 了，报错，可能是查看堆栈检测。");
+    __obj.log("MimeTypeArray 被 new 了，报错，可能是查看堆栈检测。");
     throw new TypeError("Illegal constructor");
 };
 

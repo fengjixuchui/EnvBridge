@@ -1,26 +1,11 @@
-delete global;
-
-WindowProperties = undefined;
-
-// 补充方法（依赖环境的方法，无法像 envProxy, toStringNative... 这些函数那样，写在文件的最开头）。
+/**
+ * 补充方法（依赖环境的方法，无法像 envProxy, toStringNative... 这些函数那样，写在文件的最开头）。
+ */
 // 检查是否是某个对象的实例
 __obj.isInstanceOf = (obj, constructor) => {
     return obj.__proto__ == constructor.prototype;
 }
-// 创建一个 MIME 类型对象
-__obj.newMimeType = (data) => {
-    if (!__obj.isInstanceOf(data.plugin, Plugin)) throw new Error("data.plugin 需要是 Plugin 的实例.");
-    
-    let mime_type = {};
-    mime_type.__proto__ = MimeType.prototype;
-    mime_type.description = data.description;
-    mime_type.suffixes = data.suffixes;
-    mime_type.type = data.type;
-    // plugin 是 __obj.newPlugin 出来的 
-    mime_type.enabledPlugin = data.plugin;
 
-    return mime_type;
-}
 // 创建一个插件对象
 __obj.newPlugin = (data) => {
     let plugin = {};
@@ -55,6 +40,21 @@ __obj.newPlugin = (data) => {
     }
 
     return plugin;
+}
+
+// 创建一个 MIME 类型对象
+__obj.newMimeType = (data) => {
+    if (!__obj.isInstanceOf(data.plugin, Plugin)) throw new Error("data.plugin 需要是 Plugin 的实例.");
+    
+    let mime_type = {};
+    mime_type.__proto__ = MimeType.prototype;
+    mime_type.description = data.description;
+    mime_type.suffixes = data.suffixes;
+    mime_type.type = data.type;
+    // plugin 是 __obj.newPlugin 出来的 
+    mime_type.enabledPlugin = data.plugin;
+
+    return mime_type;
 }
 // 为 navigator.plugins 添加
 __obj.insert_plugins = (plugin) => {
@@ -127,6 +127,10 @@ __obj.insert_mime_types = (mime_type) => {
     }
 }
 
+
+/**
+ * 一些零散的代码
+ */
 // 统一代理
 __obj.init_proxy_object_1 = [
     "window", "navigator", "localStorage", "screen", "history", "location", "document", "navigation", "navigator.plugins", 
@@ -134,7 +138,7 @@ __obj.init_proxy_object_1 = [
 ];
 __obj.init_proxy_object_2 = [
     "EventTarget", "Window", "Navigator", "Storage", "Screen", "History", "Location", "HTMLDocument", "Node", "Document",
-    "Navigation", "Plugin", "PluginArray", "MimeType", "MimeTypeArray",
+    "Navigation", "Plugin", "PluginArray", "MimeType", "MimeTypeArray", "Event",
 ];
 
 if (__obj.is_proxy)
@@ -145,6 +149,8 @@ if (__obj.is_proxy)
     }
 }
 
+delete global;
+WindowProperties = undefined;
 // 要写在代理后
 window.window = window;
 window.self = window;

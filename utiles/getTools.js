@@ -1,6 +1,6 @@
 const path = require('path');
 
-const { readJsFile, readJsFiles, isJsFile } = require("./readFile");
+const { readJsFile} = require("./readFile");
 
 // 将代码用自执行函数包裹起来
 function addDecorator(code, obj_name, target_name)
@@ -21,11 +21,12 @@ function getTools(obj_name, init_config)
     // 配置比较少就写在这了
     let code = `let ${obj_name} = ${JSON.stringify(init_config)};\n`;
 
-    let file_names = ["toStringNative", "stringify", "envProxy", "addLog"];
+    // 有顺序的加载
+    let file_names = ["toStringNative", "stringify", "envProxy", "log", "defineNativeFunc"];
 
     for (let file_name of file_names)
     {
-        let tmp = readJsFile(path.resolve(__dirname, "..", "supplement", `${file_name}.js`))
+        let tmp = readJsFile(path.resolve(__dirname, "..", "tools", `${file_name}.js`))
         code += addDecorator(tmp, obj_name, file_name);
     }
 
