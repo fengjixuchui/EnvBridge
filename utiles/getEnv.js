@@ -10,7 +10,7 @@ function getEnv(obj_name)
     let supplement_env_path = path.resolve(__dirname, "..", "supplementEnv");
 
     code += readJsFiles(base_env_path);;
-    code += readJsFile(path.resolve(supplement_env_path, "helpFunc.js"));
+    code += readJsFile(path.resolve(supplement_env_path, "extraAdditions.js"));
     code += readJsFile(path.resolve(supplement_env_path, "customFingerprint.js"));
 
     // 为了支持一件改名。将环境代码中 __obj 替换

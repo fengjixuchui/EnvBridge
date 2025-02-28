@@ -58,4 +58,28 @@ function readJsFiles(dir, priority)
 
     return code;
 }
-module.exports = { readJsFile, readJsFiles, isJsFile, loadJsFiles };
+// 获取一个目录下所有 js 文件的文件名
+function getJsFilesName(dir)
+{
+    let files = fs.readdirSync(dir);
+    let ret = [];
+
+    for (let file of files)
+    {
+        let file_path = path.resolve(dir, file);
+
+        if (isJsFile(file))
+        {
+            ret.push(path.parse(file_path).name);
+        } 
+        else 
+        {
+            let child = getJsFilesName(file_path);
+            ret.push(...child);
+        }
+    }
+
+    return ret;
+}
+
+module.exports = { readJsFile, readJsFiles, isJsFile, loadJsFiles, getJsFilesName };

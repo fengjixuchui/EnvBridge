@@ -33,14 +33,14 @@ for (let i = 0; i < __obj.memory.plugins.length; i++)
     let tmp = __obj.memory.plugins[i];
     // 注意并不是所有的 __obj.memory.mime_types 都要赋值上，一般是选一个或几个
     tmp.mime_types = __obj.memory.mime_types;
-    __obj.insert_plugins(nothing.newPlugin(tmp));
+    __obj.insertPlugins(nothing.newPlugin(tmp));
 }
 // navigator.mimeTypes
 for (let i = 0; i < __obj.memory.mime_types.length; i++)
 {
     let tmp = __obj.memory.mime_types[i];
     tmp.plugin = navigator.plugins[0];
-    __obj.insert_mime_types(nothing.newMimeType(tmp));
+    __obj.insertMimeTypes(nothing.newMimeType(tmp));
 }
 
 EventTarget.prototype.addEventListener = function addEventListener(type, listener, options)

@@ -1,204 +1,24 @@
 let nothing = {"is_proxy":true,"is_hook_proxyhandler":false,"is_print":true,"history":"","memory":{}};
 ;(function (__obj)
 {
-// file path: E:\ning\code\Reverse\WEB\EnvBridge\tools\toStringNative.js
-// 新的 toString
-function newToString() 
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\tools\defineNativeFunc.js
+function defineNativeFunc(obj, prop, func, descriptor = {})
 {
-    if (typeof this == 'function' && this[symbol])
-        return this[symbol];
-    else
-        return toString.call(this);
-}
-// 精简版设置属性
-function setProperty(func, key, value) 
-{
-    Object.defineProperty(func, key, {
-        "enumerable": false,
-        "configurable": true,
-        "writable": true,
-        "value": value
-    });
+    if (typeof func != "function") throw new Error("传入的 func 有误.");
+
+    // configurable enumerable writable 默认值全为 true
+    const { configurable = true, enumerable = true, writable = true } = descriptor;
+    descriptor = {
+        configurable, 
+        enumerable,
+        writable,
+        value: func
+    };
+    Object.defineProperty(obj, prop, descriptor);
+    __obj.toStringNative(obj[prop], prop);
 }
 
-function toStringNative(func, funcName)
-{
-    setProperty(func, symbol, `function ${funcName}() { [native code] }`);
-}
-
-let toString = Function.toString;
-delete Function.prototype['toString'];
-
-const symbol = Symbol((Math.round(Math.random() * 10 ** (Math.random() * 10 + 1))).toString(36));
-
-setProperty(Function.prototype, "toString", newToString);
-toStringNative(Function.prototype.toString, "toString");
-
-
-__obj.toStringNative = toStringNative;
-
-})(nothing);
-;(function (__obj)
-{
-// file path: E:\ning\code\Reverse\WEB\EnvBridge\tools\stringify.js
-/**说明
- * 函数和变量均使用小驼峰命名法
- * 数组中的 null、undefined 被剔除了
- * 对象中的 undefined 项 被剔除了
- * 循环引用的重复部分会以 |seen| 替代
- * 字符串、数组省略部分会标注长度
- */
-
-// 获取数据类型
-function getType(target) {
-    if (Array.isArray(target))
-        return 'array';
-    else if (target && target.buffer)
-        return 'arraybuffer'; // target instanceof ArrayBuffer 不算在内
-    else if (target == null)
-        return 'null';
-    return typeof target;
-}
-
-// 处理字符串中特殊字符
-function escapeSpecialCharacters(str) {
-    return str
-        .replace(/\\/g, "\\\\") // 转义反斜杠
-        .replace(/\n/g, "\\n") // 转义换行符
-        .replace(/\r/g, "\\r") // 转义回车符
-        .replace(/\t/g, "\\t") // 转义制表符
-        .replace(/\v/g, "\\v") // 转义垂直制表符
-        .replace(/\f/g, "\\f") // 转义换页符
-        .replace(/\u0008/g, "\\b"); // 转义退格符（使用 Unicode 表示）
-}
-// 字符串打印优化
-function stringifyString(str, lengthLimit) {
-    str = escapeSpecialCharacters(str);
-    if (str.length <= lengthLimit)
-        return `"${str}"`;
-    const lengthSplit = Math.floor(lengthLimit * 0.75);
-    const start = str.substring(0, lengthSplit);
-    const end = str.substring(str.length - lengthLimit + lengthSplit);
-    return `"${start}···${end}"|length ${str.length}|`;
-}
-// 判断一个数组是否全是数字
-function isNumberArray(array) {
-    return array.every(item => typeof item == 'number');
-}
-// 全数字数组打印优化
-function shortedNumberArray(array, lengthLimit) {
-    array = Array.from(array); // 针对字节数组
-    if (array.length <= lengthLimit)
-        return array.join(',');
-    else {
-        const lengthSplit = Math.floor(lengthLimit * 0.75);
-        const start = array.slice(0, lengthSplit);
-        const end = array.slice(lengthSplit - lengthLimit);
-        const middle = '···';
-        return [...start, middle, ...end].join(',');
-    }
-}
-function cleanArray(array) {
-    return array.filter(item => item != null && item != undefined);
-}
-// 将数组字符串化，并做一些打印优化
-function stringifyArray(array, lengthLimit, isRemoveEmpty, seen) {
-    // 使用 filter 方法去除空值
-    if (isRemoveEmpty) {
-        array = cleanArray(array);
-    }
-    if (isNumberArray(array)) {
-        const res = shortedNumberArray(array, lengthLimit);
-        if (array.length <= lengthLimit)
-            return `[${res}]`;
-        else
-            return `[${res}]|length ${array.length}, type array|`;
-    }
-    else {
-        let res = "[";
-        for (let i of array) {
-            let temp = stringify(i, lengthLimit, isRemoveEmpty, seen);
-            res += temp;
-            res += ",";
-        }
-        res = res.slice(0, -1) + ']';
-        return res;
-    }
-}
-// 将字节数组字符串化，并做一些打印优化
-function stringifyArrayBuffer(arraybuffer, lengthLimit) {
-    const res = shortedNumberArray(arraybuffer, lengthLimit);
-    if (arraybuffer.length <= lengthLimit)
-        return `[${res}]`;
-    else
-        return `[${res}]|length ${arraybuffer.length}, type arraybuffer|`;
-}
-function cleanObject(object) {
-    let keys = Object.keys(object);
-    let newObject = {};
-    for (const key of keys) {
-        if (object[key] == undefined || object[key] == null)
-            continue;
-        newObject[key] = object[key];
-    }
-    return newObject;
-}
-// 将对象字符串化，并做一些打印优化
-function stringifyObject(object, lengthLimit, isRemoveEmpty, seen) {
-    if (seen.has(object))
-        return "|seen|";
-    seen.add(object);
-    if (isRemoveEmpty) {
-        object = cleanObject(object);
-    }
-    let keys = Object.keys(object);
-    if (keys.length == 0)
-        return "{}";
-    let res = "{";
-    for (let key of keys) {
-        res += key;
-        res += ":";
-        res += `"${stringify(object[key], lengthLimit, isRemoveEmpty, seen)}"`;
-        res += ",";
-    }
-    res = res.slice(0, -1) + '}';
-    return res;
-}
-// 检查是否是浏览器对象 window、document、navigator...
-function isBrowserObject(variable) {
-    let ret;
-    if (variable && variable[Symbol.toStringTag]) {
-        if (typeof variable != "symbol" && (0, getType)(variable) != 'arraybuffer') {
-            ret = variable[Symbol.toStringTag].toLowerCase();
-        }
-    }
-    return ret;
-}
-// 字符串化
-function stringify(variable, lengthLimit = 50, isRemoveEmpty = true, seen = new WeakSet()) {
-    let check = isBrowserObject(variable);
-    if (check)
-        return check;
-    let type = (0, getType)(variable);
-    switch (type) {
-        case "string":
-            return stringifyString(variable, lengthLimit);
-        case "array":
-            return stringifyArray(variable, lengthLimit, isRemoveEmpty, seen);
-        case "arraybuffer":
-            return stringifyArrayBuffer(variable, lengthLimit);
-        case "object":
-            return stringifyObject(variable, lengthLimit, isRemoveEmpty, seen);
-        case "symbol":
-            return variable.toString();
-        case "function":
-            return variable.name ? `function ${variable.name}` : `function anonymous`;
-        default: // 'undefined', 'null', 'boolean', 'number'
-            return "" + variable;
-    }
-}
-
-__obj.stringify = stringify;
+__obj.defineNativeFunc = defineNativeFunc;
 
 })(nothing);
 ;(function (__obj)
@@ -405,6 +225,104 @@ __obj.envProxy = envProxy;
 })(nothing);
 ;(function (__obj)
 {
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\tools\insertMimeTypes.js
+// 为 navigator.mimeTypes 添加
+function insertMimeTypes(mime_type)
+{
+   // 做一个检查
+   if (!__obj.isInstanceOf(mime_type, MimeType)) throw new Error("mime_type 需要是 MimeType 的实例.");
+
+   if (navigator.mimeTypes.length == undefined)
+   {
+       navigator.mimeTypes.length = 1;
+       navigator.mimeTypes[0] = mime_type;
+       navigator.mimeTypes[mime_type.type] = mime_type;
+   }
+   else
+   {
+       // 考虑了重复插入的情况
+       if (navigator.mimeTypes[mime_type.type] == undefined)
+       {
+           navigator.mimeTypes[navigator.mimeTypes.length] = mime_type;
+           navigator.mimeTypes[mime_type.type] = mime_type;
+           navigator.mimeTypes.length++;
+       }
+       else 
+       {
+           // 重复插入就替换
+           navigator.mimeTypes[mime_type.type] = mime_type;
+           for (let i = 0; i < navigator.mimeTypes.length; ++i)
+           {
+               if (navigator.mimeTypes[i].type == mime_type.type)
+               {
+                   navigator.mimeTypes[i] = mime_type;
+                   break;
+               }
+           }
+       }
+   }
+}
+
+__obj.insertMimeTypes = insertMimeTypes;
+
+})(nothing);
+;(function (__obj)
+{
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\tools\insertPlugins.js
+// 为 navigator.plugins 添加
+function insertPlugins(plugin)
+{
+    // 做一个检查
+    if (!__obj.isInstanceOf(plugin, Plugin)) throw new Error("plugin 需要是 Plugin 的实例.");
+
+    if (navigator.plugins.length == undefined)
+    {
+        navigator.plugins.length = 1;
+        navigator.plugins[0] = plugin;
+        navigator.plugins[plugin.name] = plugin;
+    }
+    else
+    {
+        // 考虑了重复插入的情况
+        if (navigator.plugins[plugin.name] == undefined)
+        {
+            navigator.plugins[navigator.plugins.length] = plugin;
+            navigator.plugins[plugin.name] = plugin;
+            navigator.plugins.length++;
+        }
+        else 
+        {
+            // 重复插入就替换
+            navigator.plugins[plugin.name] = plugin;
+            for (let i = 0; i < navigator.plugins.length; ++i)
+            {
+                if (navigator.plugins[i].name == plugin.name)
+                {
+                    navigator.plugins[i] = plugin;
+                    break;
+                }
+            }
+        }
+    }
+}
+
+
+__obj.insertPlugins = insertPlugins;
+
+})(nothing);
+;(function (__obj)
+{
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\tools\isInstanceOf.js
+function isInstanceOf(obj, constructor) 
+{
+    return obj.__proto__ == constructor.prototype;
+}
+
+__obj.isInstanceOf = isInstanceOf;
+
+})(nothing);
+;(function (__obj)
+{
 // file path: E:\ning\code\Reverse\WEB\EnvBridge\tools\log.js
 function log(text)
 {
@@ -418,24 +336,271 @@ __obj.log = log;
 })(nothing);
 ;(function (__obj)
 {
-// file path: E:\ning\code\Reverse\WEB\EnvBridge\tools\defineNativeFunc.js
-function defineNativeFunc(obj, prop, func, descriptor = {})
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\tools\newMimeType.js
+// 创建一个 MIME 类型对象
+function newMimeType(data)
 {
-    if (typeof func != "function") throw new Error("传入的 func 有误.");
+    if (!__obj.isInstanceOf(data.plugin, Plugin)) throw new Error("data.plugin 需要是 Plugin 的实例.");
+    
+    let mime_type = {};
+    mime_type.__proto__ = MimeType.prototype;
+    mime_type.description = data.description;
+    mime_type.suffixes = data.suffixes;
+    mime_type.type = data.type;
+    // plugin 是 __obj.newPlugin 出来的 
+    mime_type.enabledPlugin = data.plugin;
 
-    // configurable enumerable writable 默认值全为 true
-    const { configurable = true, enumerable = true, writable = true } = descriptor;
-    descriptor = {
-        configurable, 
-        enumerable,
-        writable,
-        value: func
-    };
-    Object.defineProperty(obj, prop, descriptor);
-    __obj.toStringNative(obj[prop], prop);
+    return mime_type;
 }
 
-__obj.defineNativeFunc = defineNativeFunc;
+
+__obj.newMimeType = newMimeType;
+
+})(nothing);
+;(function (__obj)
+{
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\tools\newPlugin.js
+// 创建一个插件对象
+function newPlugin(data)
+{
+    let plugin = {};
+    plugin.__proto__ = Plugin.prototype;
+    plugin.description = data.description;
+    plugin.filename = data.filename
+    plugin.name = data.name;
+
+    // 不检查可以不传 data.mime_types
+    if (data.mime_types)
+    {
+        // 做一个检查
+        if (!Array.isArray(data.mime_types)) throw new Error("需要以数组的形式传入 mime_types.");
+
+        plugin.length = data.mime_types.length;
+        for (let i = 0; i < data.mime_types.length; i++)
+        {
+            let mime_type_data = {
+                "description": data.mime_types[i].description,
+                "suffixes": data.mime_types[i].suffixes,
+                "type": data.mime_types[i].type,
+                "plugin": plugin
+            };
+            let mime_type = __obj.newMimeType(mime_type_data);
+
+            plugin[i] = mime_type;
+            Object.defineProperty(plugin, mime_type.type, {
+                value: mime_type,
+                writable: true
+            });
+        }
+    }
+
+    return plugin;
+}
+
+
+__obj.newPlugin = newPlugin;
+
+})(nothing);
+;(function (__obj)
+{
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\tools\stringify.js
+/**说明
+ * 函数和变量均使用小驼峰命名法
+ * 数组中的 null、undefined 被剔除了
+ * 对象中的 undefined 项 被剔除了
+ * 循环引用的重复部分会以 |seen| 替代
+ * 字符串、数组省略部分会标注长度
+ */
+
+// 获取数据类型
+function getType(target) {
+    if (Array.isArray(target))
+        return 'array';
+    else if (target && target.buffer)
+        return 'arraybuffer'; // target instanceof ArrayBuffer 不算在内
+    else if (target == null)
+        return 'null';
+    return typeof target;
+}
+
+// 处理字符串中特殊字符
+function escapeSpecialCharacters(str) {
+    return str
+        .replace(/\\/g, "\\\\") // 转义反斜杠
+        .replace(/\n/g, "\\n") // 转义换行符
+        .replace(/\r/g, "\\r") // 转义回车符
+        .replace(/\t/g, "\\t") // 转义制表符
+        .replace(/\v/g, "\\v") // 转义垂直制表符
+        .replace(/\f/g, "\\f") // 转义换页符
+        .replace(/\u0008/g, "\\b"); // 转义退格符（使用 Unicode 表示）
+}
+// 字符串打印优化
+function stringifyString(str, lengthLimit) {
+    str = escapeSpecialCharacters(str);
+    if (str.length <= lengthLimit)
+        return `"${str}"`;
+    const lengthSplit = Math.floor(lengthLimit * 0.75);
+    const start = str.substring(0, lengthSplit);
+    const end = str.substring(str.length - lengthLimit + lengthSplit);
+    return `"${start}···${end}"|length ${str.length}|`;
+}
+// 判断一个数组是否全是数字
+function isNumberArray(array) {
+    return array.every(item => typeof item == 'number');
+}
+// 全数字数组打印优化
+function shortedNumberArray(array, lengthLimit) {
+    array = Array.from(array); // 针对字节数组
+    if (array.length <= lengthLimit)
+        return array.join(',');
+    else {
+        const lengthSplit = Math.floor(lengthLimit * 0.75);
+        const start = array.slice(0, lengthSplit);
+        const end = array.slice(lengthSplit - lengthLimit);
+        const middle = '···';
+        return [...start, middle, ...end].join(',');
+    }
+}
+function cleanArray(array) {
+    return array.filter(item => item != null && item != undefined);
+}
+// 将数组字符串化，并做一些打印优化
+function stringifyArray(array, lengthLimit, isRemoveEmpty, seen) {
+    // 使用 filter 方法去除空值
+    if (isRemoveEmpty) {
+        array = cleanArray(array);
+    }
+    if (isNumberArray(array)) {
+        const res = shortedNumberArray(array, lengthLimit);
+        if (array.length <= lengthLimit)
+            return `[${res}]`;
+        else
+            return `[${res}]|length ${array.length}, type array|`;
+    }
+    else {
+        let res = "[";
+        for (let i of array) {
+            let temp = stringify(i, lengthLimit, isRemoveEmpty, seen);
+            res += temp;
+            res += ",";
+        }
+        res = res.slice(0, -1) + ']';
+        return res;
+    }
+}
+// 将字节数组字符串化，并做一些打印优化
+function stringifyArrayBuffer(arraybuffer, lengthLimit) {
+    const res = shortedNumberArray(arraybuffer, lengthLimit);
+    if (arraybuffer.length <= lengthLimit)
+        return `[${res}]`;
+    else
+        return `[${res}]|length ${arraybuffer.length}, type arraybuffer|`;
+}
+function cleanObject(object) {
+    let keys = Object.keys(object);
+    let newObject = {};
+    for (const key of keys) {
+        if (object[key] == undefined || object[key] == null)
+            continue;
+        newObject[key] = object[key];
+    }
+    return newObject;
+}
+// 将对象字符串化，并做一些打印优化
+function stringifyObject(object, lengthLimit, isRemoveEmpty, seen) {
+    if (seen.has(object))
+        return "|seen|";
+    seen.add(object);
+    if (isRemoveEmpty) {
+        object = cleanObject(object);
+    }
+    let keys = Object.keys(object);
+    if (keys.length == 0)
+        return "{}";
+    let res = "{";
+    for (let key of keys) {
+        res += key;
+        res += ":";
+        res += `"${stringify(object[key], lengthLimit, isRemoveEmpty, seen)}"`;
+        res += ",";
+    }
+    res = res.slice(0, -1) + '}';
+    return res;
+}
+// 检查是否是浏览器对象 window、document、navigator...
+function isBrowserObject(variable) {
+    let ret;
+    if (variable && variable[Symbol.toStringTag]) {
+        if (typeof variable != "symbol" && (0, getType)(variable) != 'arraybuffer') {
+            ret = variable[Symbol.toStringTag].toLowerCase();
+        }
+    }
+    return ret;
+}
+// 字符串化
+function stringify(variable, lengthLimit = 50, isRemoveEmpty = true, seen = new WeakSet()) {
+    let check = isBrowserObject(variable);
+    if (check)
+        return check;
+    let type = (0, getType)(variable);
+    switch (type) {
+        case "string":
+            return stringifyString(variable, lengthLimit);
+        case "array":
+            return stringifyArray(variable, lengthLimit, isRemoveEmpty, seen);
+        case "arraybuffer":
+            return stringifyArrayBuffer(variable, lengthLimit);
+        case "object":
+            return stringifyObject(variable, lengthLimit, isRemoveEmpty, seen);
+        case "symbol":
+            return variable.toString();
+        case "function":
+            return variable.name ? `function ${variable.name}` : `function anonymous`;
+        default: // 'undefined', 'null', 'boolean', 'number'
+            return "" + variable;
+    }
+}
+
+__obj.stringify = stringify;
+
+})(nothing);
+;(function (__obj)
+{
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\tools\toStringNative.js
+// 新的 toString
+function newToString() 
+{
+    if (typeof this == 'function' && this[symbol])
+        return this[symbol];
+    else
+        return toString.call(this);
+}
+// 精简版设置属性
+function setProperty(func, key, value) 
+{
+    Object.defineProperty(func, key, {
+        "enumerable": false,
+        "configurable": true,
+        "writable": true,
+        "value": value
+    });
+}
+
+function toStringNative(func, funcName)
+{
+    setProperty(func, symbol, `function ${funcName}() { [native code] }`);
+}
+
+let toString = Function.toString;
+delete Function.prototype['toString'];
+
+const symbol = Symbol((Math.round(Math.random() * 10 ** (Math.random() * 10 + 1))).toString(36));
+
+setProperty(Function.prototype, "toString", newToString);
+toStringNative(Function.prototype.toString, "toString");
+
+
+__obj.toStringNative = toStringNative;
 
 })(nothing);
 // file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\document.js
@@ -879,141 +1044,12 @@ Object.defineProperties(WindowProperties.prototype, {
     }
 });
 nothing.toStringNative(Window, "Window");
-// file path: E:\ning\code\Reverse\WEB\EnvBridge\supplementEnv\helpFunc.js
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\supplementEnv\extraAdditions.js
 /**
- * 补充方法（依赖环境的方法，无法像 envProxy, toStringNative... 这些函数那样，写在文件的最开头）。
+ * 一些零散的补充
  */
-// 检查是否是某个对象的实例
-nothing.isInstanceOf = (obj, constructor) => {
-    return obj.__proto__ == constructor.prototype;
-}
 
-// 创建一个插件对象
-nothing.newPlugin = (data) => {
-    let plugin = {};
-    plugin.__proto__ = Plugin.prototype;
-    plugin.description = data.description;
-    plugin.filename = data.filename
-    plugin.name = data.name;
-
-    // 不检查可以不传 data.mime_types
-    if (data.mime_types)
-    {
-        // 做一个检查
-        if (!Array.isArray(data.mime_types)) throw new Error("需要以数组的形式传入 mime_types.");
-
-        plugin.length = data.mime_types.length;
-        for (let i = 0; i < data.mime_types.length; i++)
-        {
-            let mime_type_data = {
-                "description": data.mime_types[i].description,
-                "suffixes": data.mime_types[i].suffixes,
-                "type": data.mime_types[i].type,
-                "plugin": plugin
-            };
-            let mime_type = nothing.newMimeType(mime_type_data);
-
-            plugin[i] = mime_type;
-            Object.defineProperty(plugin, mime_type.type, {
-                value: mime_type,
-                writable: true
-            });
-        }
-    }
-
-    return plugin;
-}
-
-// 创建一个 MIME 类型对象
-nothing.newMimeType = (data) => {
-    if (!nothing.isInstanceOf(data.plugin, Plugin)) throw new Error("data.plugin 需要是 Plugin 的实例.");
-    
-    let mime_type = {};
-    mime_type.__proto__ = MimeType.prototype;
-    mime_type.description = data.description;
-    mime_type.suffixes = data.suffixes;
-    mime_type.type = data.type;
-    // plugin 是 nothing.newPlugin 出来的 
-    mime_type.enabledPlugin = data.plugin;
-
-    return mime_type;
-}
-// 为 navigator.plugins 添加
-nothing.insert_plugins = (plugin) => {
-    // 做一个检查
-    if (!nothing.isInstanceOf(plugin, Plugin)) throw new Error("plugin 需要是 Plugin 的实例.");
-
-    if (navigator.plugins.length == undefined)
-    {
-        navigator.plugins.length = 1;
-        navigator.plugins[0] = plugin;
-        navigator.plugins[plugin.name] = plugin;
-    }
-    else
-    {
-        // 考虑了重复插入的情况
-        if (navigator.plugins[plugin.name] == undefined)
-        {
-            navigator.plugins[navigator.plugins.length] = plugin;
-            navigator.plugins[plugin.name] = plugin;
-            navigator.plugins.length++;
-        }
-        else 
-        {
-            // 重复插入就替换
-            navigator.plugins[plugin.name] = plugin;
-            for (let i = 0; i < navigator.plugins.length; ++i)
-            {
-                if (navigator.plugins[i].name == plugin.name)
-                {
-                    navigator.plugins[i] = plugin;
-                    break;
-                }
-            }
-        }
-    }
-}
-// 为 navigator.mimeTypes 添加
-nothing.insert_mime_types = (mime_type) => {
-    // 做一个检查
-    if (!nothing.isInstanceOf(mime_type, MimeType)) throw new Error("mime_type 需要是 MimeType 的实例.");
-
-    if (navigator.mimeTypes.length == undefined)
-    {
-        navigator.mimeTypes.length = 1;
-        navigator.mimeTypes[0] = mime_type;
-        navigator.mimeTypes[mime_type.type] = mime_type;
-    }
-    else
-    {
-        // 考虑了重复插入的情况
-        if (navigator.mimeTypes[mime_type.type] == undefined)
-        {
-            navigator.mimeTypes[navigator.mimeTypes.length] = mime_type;
-            navigator.mimeTypes[mime_type.type] = mime_type;
-            navigator.mimeTypes.length++;
-        }
-        else 
-        {
-            // 重复插入就替换
-            navigator.mimeTypes[mime_type.type] = mime_type;
-            for (let i = 0; i < navigator.mimeTypes.length; ++i)
-            {
-                if (navigator.mimeTypes[i].type == mime_type.type)
-                {
-                    navigator.mimeTypes[i] = mime_type;
-                    break;
-                }
-            }
-        }
-    }
-}
-
-
-/**
- * 一些零散的代码
- */
-// 统一代理
+// 初始，统一代理
 nothing.init_proxy_object_1 = [
     "window", "navigator", "localStorage", "screen", "history", "location", "document", "navigation", "navigator.plugins", 
     "navigator.mimeTypes",
@@ -1076,14 +1112,14 @@ for (let i = 0; i < nothing.memory.plugins.length; i++)
     let tmp = nothing.memory.plugins[i];
     // 注意并不是所有的 nothing.memory.mime_types 都要赋值上，一般是选一个或几个
     tmp.mime_types = nothing.memory.mime_types;
-    nothing.insert_plugins(nothing.newPlugin(tmp));
+    nothing.insertPlugins(nothing.newPlugin(tmp));
 }
 // navigator.mimeTypes
 for (let i = 0; i < nothing.memory.mime_types.length; i++)
 {
     let tmp = nothing.memory.mime_types[i];
     tmp.plugin = navigator.plugins[0];
-    nothing.insert_mime_types(nothing.newMimeType(tmp));
+    nothing.insertMimeTypes(nothing.newMimeType(tmp));
 }
 
 EventTarget.prototype.addEventListener = function addEventListener(type, listener, options)
