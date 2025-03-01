@@ -27,3 +27,8 @@ test("navigator.mimeTypes[0].toString() == '[object MimeType]'");
 test("navigator.mimeTypes[0].enabledPlugin[0] != navigator.mimeTypes[0]");
 test("navigator.mimeTypes[0] != navigator.plugins[0][0]");
 test("navigator.mimeTypes[0].enabledPlugin == navigator.plugins[0]");
+
+test("HTMLFormElement.prototype.__proto__ == HTMLElement.prototype");
+test("HTMLIFrameElement.prototype.__proto__ == HTMLElement.prototype");
+test("HTMLElement.prototype.__proto__ == Element.prototype");
+test("Element.prototype.__proto__ == Node.prototype");

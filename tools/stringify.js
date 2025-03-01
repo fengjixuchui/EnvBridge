@@ -126,7 +126,8 @@ function isBrowserObject(variable) {
     let ret;
     if (variable && variable[Symbol.toStringTag]) {
         if (typeof variable != "symbol" && (0, getType)(variable) != 'arraybuffer') {
-            ret = variable[Symbol.toStringTag].toLowerCase();
+
+            ret = 'browser ' + variable[Symbol.toStringTag].toLowerCase();
         }
     }
     return ret;

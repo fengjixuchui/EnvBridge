@@ -1,4 +1,5 @@
-function defineNativeFunc(obj, prop, func, descriptor = {})
+// 创建浏览器对象上的方法
+function defineNativeMethod(obj, prop, func, descriptor = {})
 {
     if (typeof func != "function") throw new Error("传入的 func 有误.");
 

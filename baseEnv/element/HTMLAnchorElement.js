@@ -1,0 +1,1 @@
+eval(__obj.defineNativeObject("HTMLAnchorElement", "HTMLElement"));

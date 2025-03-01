@@ -1,35 +1,18 @@
-function HTMLDocument() 
-{ 
-    __obj.log("HTMLDocument 被 new 了，报错，可能是查看堆栈检测。");
-    throw new TypeError("Illegal constructor");
-};
+eval(__obj.defineNativeObject("Document", "Node"));
+eval(__obj.defineNativeObject("HTMLDocument", "Document"));
 
-function Document() {};
-
-var document = {};
+document = {};
 document.__proto__ = HTMLDocument.prototype;
-HTMLDocument.prototype.__proto__ = Document.prototype;
-Document.prototype.__proto__ = Node.prototype;
 
-Object.defineProperties(HTMLDocument.prototype, {
-    [Symbol.toStringTag]: {
-        value: "HTMLDocument",
-        configurable: true
-    }
-});
-Object.defineProperties(Document.prototype, {
-    [Symbol.toStringTag]: {
-        value: "Document",
-        configurable: true
-    }
-});
-__obj.toStringNative(Document, "Document");
-__obj.toStringNative(HTMLDocument, "HTMLDocument");
+/**
+ * 属性实现
+ */
+
 
 /**
  * 方法实现
  */
-__obj.defineNativeFunc(Document.prototype, "createEvent", 
+__obj.defineNativeMethod(Document.prototype, "createEvent", 
     function createEvent(event_type) 
     {
     let enent = {};
@@ -43,6 +26,6 @@ __obj.defineNativeFunc(Document.prototype, "createEvent",
             debugger;
     }
 
-    return enent;
+    return __obj.envProxy(enent, event_type);
     }
 )

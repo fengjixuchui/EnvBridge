@@ -1,8 +1,9 @@
-let nothing = {"is_proxy":true,"is_hook_proxyhandler":false,"is_print":true,"history":"","memory":{}};
+let nothing = {"name":"nothing","is_proxy":true,"is_hook_proxyhandler":false,"is_print":true,"history":"","memory":{},"tmp":{}};
 ;(function (__obj)
 {
-// file path: E:\ning\code\Reverse\WEB\EnvBridge\tools\defineNativeFunc.js
-function defineNativeFunc(obj, prop, func, descriptor = {})
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\tools\defineNativeMethod.js
+// 创建浏览器对象上的方法
+function defineNativeMethod(obj, prop, func, descriptor = {})
 {
     if (typeof func != "function") throw new Error("传入的 func 有误.");
 
@@ -18,7 +19,50 @@ function defineNativeFunc(obj, prop, func, descriptor = {})
     __obj.toStringNative(obj[prop], prop);
 }
 
-__obj.defineNativeFunc = defineNativeFunc;
+__obj.defineNativeMethod = defineNativeMethod;
+
+})(nothing);
+;(function (__obj)
+{
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\tools\defineNativeObject.js
+// 创建浏览器对象
+function defineNativeObject(object_name, parent_name="Object")
+{
+    let code = `
+    function ${object_name}()
+    {
+        ${this.name}.log("${object_name} 被 new 了，可能是检测。");
+    }
+    ${object_name}.prototype.__proto__ = ${parent_name}.prototype;
+    Object.defineProperties(${object_name}.prototype, {
+        [Symbol.toStringTag]: {
+            value: "${object_name}",
+            configurable: true
+        }
+    });
+    ${this.name}.toStringNative(${object_name}, "${object_name}");
+    `
+    return code;
+}
+
+__obj.defineNativeObject = defineNativeObject;
+
+})(nothing);
+;(function (__obj)
+{
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\tools\downLog.js
+
+// 下载日志 nothing.downLog();
+function downLog(property="history", name="log.txt")
+{
+    const fs = require('fs');
+    const path = require('path');
+
+    file_path = path.resolve(".", name);
+    fs.writeFileSync(file_path, this[property]);
+}
+
+__obj.downLog = downLog;
 
 })(nothing);
 ;(function (__obj)
@@ -331,6 +375,9 @@ function log(text)
     if (__obj["is_print"]) console.log(text);
 }
 
+
+
+
 __obj.log = log;
 
 })(nothing);
@@ -532,7 +579,8 @@ function isBrowserObject(variable) {
     let ret;
     if (variable && variable[Symbol.toStringTag]) {
         if (typeof variable != "symbol" && (0, getType)(variable) != 'arraybuffer') {
-            ret = variable[Symbol.toStringTag].toLowerCase();
+
+            ret = 'browser ' + variable[Symbol.toStringTag].toLowerCase();
         }
     }
     return ret;
@@ -603,39 +651,103 @@ toStringNative(Function.prototype.toString, "toString");
 __obj.toStringNative = toStringNative;
 
 })(nothing);
-// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\document.js
-function HTMLDocument() 
-{ 
-    nothing.log("HTMLDocument 被 new 了，报错，可能是查看堆栈检测。");
-    throw new TypeError("Illegal constructor");
-};
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\EventTarget.js
+eval(nothing.defineNativeObject("EventTarget"));
 
-function Document() {};
-
-var document = {};
-document.__proto__ = HTMLDocument.prototype;
-HTMLDocument.prototype.__proto__ = Document.prototype;
-Document.prototype.__proto__ = Node.prototype;
-
-Object.defineProperties(HTMLDocument.prototype, {
-    [Symbol.toStringTag]: {
-        value: "HTMLDocument",
-        configurable: true
-    }
-});
-Object.defineProperties(Document.prototype, {
-    [Symbol.toStringTag]: {
-        value: "Document",
-        configurable: true
-    }
-});
-nothing.toStringNative(Document, "Document");
-nothing.toStringNative(HTMLDocument, "HTMLDocument");
+// 全局的事件监听写在 nothing.memory 中
+nothing.memory.event_listeners = new Map();
 
 /**
  * 方法实现
  */
-nothing.defineNativeFunc(Document.prototype, "createEvent", 
+nothing.defineNativeMethod(EventTarget.prototype, "addEventListener", 
+    function addEventListener(type, listener, options)
+    {
+        if (options != undefined) debugger;
+
+        let event_listener = nothing.memory.event_listeners.get(this);
+        if (event_listener == undefined) 
+        {
+            event_listener = {}
+            nothing.memory.event_listeners.set(this, event_listener);
+        }
+    
+        if (event_listener[type] == undefined)
+        {
+            event_listener[type] = [];
+        }    
+        
+        event_listener[type].push(listener);
+        return true;
+    }
+)
+
+nothing.defineNativeMethod(EventTarget.prototype, "removeEventListener", 
+    function removeEventListener(type, listener, options)
+    {
+        if (options != undefined) debugger;
+
+        let event_listener = nothing.memory.event_listeners.get(this);
+        let arr = event_listener[type];
+        for (let i = 0; i < arr.length; ++i)
+        {
+            if (arr[i] == listener) arr.splice(i, 1);
+        }
+    }
+)
+
+nothing.defineNativeMethod(EventTarget.prototype, "dispatchEvent", 
+    function dispatchEvent(event)
+    {
+        let event_listener = nothing.memory.event_listeners.get(this);
+        if (!event_listener) return false;
+
+        let arr = event_listener[event.type];
+        if (!arr) return false;
+
+        for (let listener of arr)
+        {
+            listener.call(this, event);
+        }
+    }
+)
+
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\window.js
+eval(nothing.defineNativeObject("WindowProperties", "EventTarget"));
+eval(nothing.defineNativeObject("Window", "WindowProperties"));
+
+window = globalThis;
+window.__proto__ = Window.prototype;
+
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\element\Node.js
+eval(nothing.defineNativeObject("Node", "EventTarget"));
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\element\Element.js
+eval(nothing.defineNativeObject("Element", "Node"));
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\element\HTMLElement.js
+eval(nothing.defineNativeObject("HTMLElement", "Element"));
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\event\Event.js
+eval(nothing.defineNativeObject("Event"));
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\crypto.js
+eval(nothing.defineNativeObject("Crypto"));
+
+crypto = {};
+crypto.__proto__ = Crypto.prototype;
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\document.js
+eval(nothing.defineNativeObject("Document", "Node"));
+eval(nothing.defineNativeObject("HTMLDocument", "Document"));
+
+document = {};
+document.__proto__ = HTMLDocument.prototype;
+
+/**
+ * 属性实现
+ */
+
+
+/**
+ * 方法实现
+ */
+nothing.defineNativeMethod(Document.prototype, "createEvent", 
     function createEvent(event_type) 
     {
     let enent = {};
@@ -649,401 +761,89 @@ nothing.defineNativeFunc(Document.prototype, "createEvent",
             debugger;
     }
 
-    return enent;
+    return nothing.envProxy(enent, event_type);
     }
 )
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\element\HTMLAnchorElement.js
+eval(nothing.defineNativeObject("HTMLAnchorElement", "HTMLElement"));
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\element\HTMLFormElement.js
+eval(nothing.defineNativeObject("HTMLFormElement", "HTMLElement"));
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\element\HTMLIFrameElement.js
+eval(nothing.defineNativeObject("HTMLIFrameElement", "HTMLElement"));
 // file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\event\CustomEvent.js
-function CustomEvent() 
-{ 
-    nothing.log("CustomEvent 被 new 了，报错，可能是查看堆栈检测。");
-    throw new TypeError("Illegal constructor");
-};
-
-Object.defineProperties(CustomEvent.prototype, {
-    [Symbol.toStringTag]: {
-        value: "CustomEvent",
-        configurable: true
-    }
-});
-nothing.toStringNative(CustomEvent, "CustomEvent");
+eval(nothing.defineNativeObject("CustomEvent", "Event"));
 
 /**
  * 方法实现
  */
-nothing.defineNativeFunc(CustomEvent.prototype, "initCustomEvent", 
-    function initCustomEvent(type, can_bubble, can_celable, detail)
+nothing.defineNativeMethod(CustomEvent.prototype, "initCustomEvent", 
+    function initCustomEvent(type, cancelBubble, cancelable, detail)
     {
-
+        this.type = type;
+        this.cancelBubble = cancelBubble;
+        this.cancelable = cancelable;
+        this.detail = detail;
     }
 )
-// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\event\Event.js
-function Event() 
-{ 
-    nothing.log("Event 被 new 了，报错，可能是查看堆栈检测。");
-    throw new TypeError("Illegal constructor");
-};
-
-Object.defineProperties(Event.prototype, {
-    [Symbol.toStringTag]: {
-        value: "Event",
-        configurable: true
-    }
-});
-nothing.toStringNative(Event, "Event");
-// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\EventTarget.js
-function EventTarget() {};
-
-Object.defineProperties(EventTarget.prototype, {
-    [Symbol.toStringTag]: {
-        value: "EventTarget",
-        configurable: true
-    }
-})
-nothing.toStringNative(EventTarget, "EventTarget");
-
-// 全局的事件监听写在 nothing.memory 中
-nothing.memory.event_listeners = {};
-nothing.memory.event_listeners_instance_map = new Map();
-
-// 实现不完全，没搞懂事件模型，先搁置
-// // 补充 addEventListener removeEventListener dispatchEvent 方法
-// EventTarget.prototype.addEventListener = function addEventListener(type, listener, options = false)
-// {
-//     // 处理默认参数
-//     const { capture = false, once = false, passive = false, signal } = typeof options === 'object' ? options : { capture: options };
-//     if (passive) nothing.log("addEventListener: 默认参数的 passive 设置为了 true,可能是检测.");
-    
-//     // 全局调用与示例调用区分
-//     let  event_listeners;
-//     if (this == nothing.memory.this) event_listeners = nothing.memory.event_listeners;
-//     else 
-//     {
-//         if (nothing.memory.event_listeners_instance_map.has(this))
-//         {
-//             event_listeners = nothing.memory.event_listeners_instance_map.get(this);
-//         }
-//         else 
-//         {
-//             event_listeners = {};
-//             nothing.memory.event_listeners_instance_map.set(this, event_listeners);
-//         }
-//     }
-//     // 实现
-//     if (!event_listeners[type])
-//     {
-//         event_listeners[type] = { capture: [], bubble: [] };
-//     }
-
-//     const list = event_listeners[type][capture ? 'capture' : 'bubble'];
-//     const listener_object = { listener, once, passive, capture };
-
-//     // 没有相同的 listener 就加入内存中
-//     if (!list.some(l => l.listener === listener))
-//     {
-//         list.push(listener_object);
-//         // 如果提供了 AbortSignal，监听 abort 事件来移除监听器
-//         if (signal)
-//         {
-//             signal.addEventListener('abort', () => {
-//                 this.removeEventListener(type, listener, { capture });
-//             });
-//         }
-//     }
-// }
-// EventTarget.prototype.removeEventListener = function removeEventListener(type, listener, options = false)
-// {
-//      // 处理默认参数
-//     const { capture = false } = typeof options === 'object' ? options : { capture: options };
-//     // 全局调用与示例调用区分
-//     let  event_listeners;
-//     if (this == nothing.memory.this) event_listeners = nothing.memory.event_listeners;
-//     else 
-//     {
-//         if (nothing.memory.event_listeners_instance_map.has(this))
-//         {
-//             event_listeners = nothing.memory.event_listeners_instance_map.get(this);
-//         }
-//         else 
-//         {
-//             nothing.log("removeEventListener: 删除了一个未注册的事件,可能是检测.");
-//             return;
-//         }
-//     }
-//     // 检查
-//     if (!event_listeners[type]) 
-//     {
-//         nothing.log("removeEventListener: 删除了一个未注册的事件,可能是检测.");
-//         return;
-//     }
-
-//     const list = event_listeners[type][capture ? 'capture' : 'bubble'] || [];
-//     // 检查
-//     if (list.length == 0) 
-//     {
-//         nothing.log("removeEventListener: 删除了一个未注册的事件,可能是检测.");
-//         return;
-//     }
-//     event_listeners[type][capture ? 'capture' : 'bubble'] = list.filter(l => l.listener !== listener);
-// }
-// EventTarget.prototype.dispatchEvent = function dispatchEvent(event)
-// {
-//     const { type, target, cancelable } = event;
-//     // 全局调用与示例调用区分
-//     let  event_listeners;
-//     if (this == nothing.memory.this) event_listeners = nothing.memory.event_listeners;
-//     else 
-//     {
-//         if (nothing.memory.event_listeners_instance_map.has(this))
-//         {
-//             event_listeners = nothing.memory.event_listeners_instance_map.get(this);
-//         }
-//         else 
-//         {
-//             nothing.log("dispatchEvent: 触发了一个未注册的事件,可能是检测.");
-//             return;
-//         }
-//     }
-
-//     const listeners = event_listeners[type];
-//     if (!listeners) return true;
-
-//     let defaultPrevented = false;
-//     const handleEvent = (list, event) => {
-//         for (const listenerObject of list) 
-//         {
-//             if (listenerObject.once) 
-//                 this.removeEventListener(type, listenerObject.listener, { capture: listenerObject.capture });
-            
-
-//             if (!listenerObject.passive && event.preventDefault) 
-//             {
-//                 event.preventDefault = () => {
-//                     defaultPrevented = true;
-//                 };
-//             }
-
-//             listenerObject.listener.call(target, event);
-//         }
-//     };
-
-//     // 捕获阶段
-//     if (listeners.capture) handleEvent(listeners.capture, event);
-
-//     // 目标阶段
-//     if (listeners.bubble) handleEvent(listeners.bubble, event);
-
-//     return !(cancelable && defaultPrevented);
-// }
-
 // file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\history.js
-function History() 
-{ 
-    nothing.log("History 被 new 了，报错，可能是查看堆栈检测。");
-    throw new TypeError("Illegal constructor");
-};
+eval(nothing.defineNativeObject("History"));
 
-var history = {};
+history = {};
 history.__proto__ = History.prototype;
 
-Object.defineProperties(History.prototype, {
-    [Symbol.toStringTag]: {
-        value: "History",
-        configurable: true
-    }
-});
-nothing.toStringNative(History, "History");
 // file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\localStorage.js
-function Storage() 
-{ 
-    nothing.log("Storage 被 new 了，报错，可能是查看堆栈检测。");
-    throw new TypeError("Illegal constructor");
-};
+eval(nothing.defineNativeObject("Storage"));
 
-var localStorage = {};
+localStorage = {};
 localStorage.__proto__ = Storage.prototype;
 
-Object.defineProperties(Storage.prototype, {
-    [Symbol.toStringTag]: {
-        value: "Storage",
-        configurable: true
-    }
-});
-nothing.toStringNative(Storage, "Storage");
 // file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\location.js
-function Location()
-{
-    nothing.log("Location 被 new 了，报错，可能是查看堆栈检测。");
-    throw new TypeError("Illegal constructor");
-};
+eval(nothing.defineNativeObject("Location"));
 
-var location = {};
+location = {};
 location.__proto__ = Location.prototype;
 
-Object.defineProperties(Location.prototype, {
-    [Symbol.toStringTag]: {
-        value: "Location",
-        configurable: true
-    }
-});
-nothing.toStringNative(Location, "Location");
 // file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\navigation.js
-function Navigation() 
-{ 
-    nothing.log("Navigation 被 new 了，报错，可能是查看堆栈检测。");
-    throw new TypeError("Illegal constructor");
-};
+eval(nothing.defineNativeObject("Navigation", "EventTarget"));
 
-var navigation = {};
+navigation = {};
 navigation.__proto__ = Navigation.prototype;
-Navigation.prototype.__proto__ = EventTarget.prototype;
 
-Object.defineProperties(Navigation.prototype, {
-    [Symbol.toStringTag]: {
-        value: "Navigation",
-        configurable: true
-    }
-});
-nothing.toStringNative(Navigation, "Navigation");
 // file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\navigator.js
-function Navigator() 
-{ 
-    nothing.log("Navigator 被 new 了，报错，可能是查看堆栈检测。");
-    throw new TypeError("Illegal constructor");
-};
+eval(nothing.defineNativeObject("Navigator"));
 
-// 不能用 let
-var navigator = {};
+
+navigator = {};
 navigator.__proto__ = Navigator.prototype;
 
-Object.defineProperties(Navigator.prototype, {
-    [Symbol.toStringTag]: {
-        value: "Navigator",
-        configurable: true
-    }
-});
-nothing.toStringNative(Navigator, "Navigator");
-// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\node\Node.js
-function Node() 
-{ 
-    nothing.log("Node 被 new 了，报错，可能是查看堆栈检测。");
-    throw new TypeError("Illegal constructor");
-};
+// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\performance.js
+eval(nothing.defineNativeObject("Performance", "EventTarget"));
 
-Node.prototype.__proto__ = EventTarget.prototype;
+performance = {};
+performance.__proto__ = Performance.prototype;
 
-Object.defineProperties(Node.prototype, {
-    [Symbol.toStringTag]: {
-        value: "Node",
-        configurable: true
-    }
-});
-nothing.toStringNative(Node, "Node");
+
 // file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\plugin.js
-function Plugin() 
-{ 
-    nothing.log("Plugin 被 new 了，报错，可能是查看堆栈检测。");
-    throw new TypeError("Illegal constructor");
-};
-
-function PluginArray() 
-{ 
-    nothing.log("PluginArray 被 new 了，报错，可能是查看堆栈检测。");
-    throw new TypeError("Illegal constructor");
-};
-
-function MimeType() 
-{ 
-    nothing.log("MimeType 被 new 了，报错，可能是查看堆栈检测。");
-    throw new TypeError("Illegal constructor");
-};
-
-function MimeTypeArray() 
-{ 
-    nothing.log("MimeTypeArray 被 new 了，报错，可能是查看堆栈检测。");
-    throw new TypeError("Illegal constructor");
-};
+eval(nothing.defineNativeObject("Plugin"));
+eval(nothing.defineNativeObject("PluginArray"));
+eval(nothing.defineNativeObject("MimeType"));
+eval(nothing.defineNativeObject("MimeTypeArray"));
 
 navigator.plugins = {};
 navigator.mimeTypes = {};
 navigator.plugins.__proto__ = PluginArray.prototype;
 navigator.mimeTypes.__proto__ = MimeTypeArray.prototype;
 
-Object.defineProperties(Plugin.prototype, {
-    [Symbol.toStringTag]: {
-        value: "Plugin",
-        configurable: true
-    }
-});
-Object.defineProperties(MimeType.prototype, {
-    [Symbol.toStringTag]: {
-        value: "MimeType",
-        configurable: true
-    },
-});
-Object.defineProperties(PluginArray.prototype, {
-    [Symbol.toStringTag]: {
-        value: "PluginArray",
-        configurable: true
-    }
-});
-Object.defineProperties(MimeTypeArray.prototype, {
-    [Symbol.toStringTag]: {
-        value: "MimeTypeArray",
-        configurable: true
-    }
-});
-nothing.toStringNative(Plugin, "Plugin");
-nothing.toStringNative(MimeType, "MimeType");
-nothing.toStringNative(PluginArray, "PluginArray");
-nothing.toStringNative(MimeTypeArray, "MimeTypeArray");
 
 
 // file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\screen.js
-function Screen() 
-{ 
-    nothing.log("Screen 被 new 了，报错，可能是查看堆栈检测。");
-    throw new TypeError("Illegal constructor");
-};
+eval(nothing.defineNativeObject("Screen", "EventTarget"));
 
-var screen = {};
+screen = {};
 screen.__proto__ = Screen.prototype;
-Screen.prototype.__proto__ = EventTarget.prototype;
 
-Object.defineProperties(Screen.prototype, {
-    [Symbol.toStringTag]: {
-        value: "Screen",
-        configurable: true
-    }
-});
-nothing.toStringNative(Screen, "Screen");
-// file path: E:\ning\code\Reverse\WEB\EnvBridge\baseEnv\window.js
-let window = globalThis;
 
-function Window() 
-{
-    nothing.log("Window 被 new 了，报错，可能是查看堆栈检测。");
-    throw new TypeError("Illegal constructor");
-};
 
-function WindowProperties() {};
-
-window.__proto__ = Window.prototype;
-Window.prototype.__proto__ = WindowProperties.prototype;
-WindowProperties.prototype.__proto__ = EventTarget.prototype;
-
-Object.defineProperties(Window.prototype, {
-    [Symbol.toStringTag]: {
-        value: "Window",
-        configurable: true
-    }
-});
-Object.defineProperties(WindowProperties.prototype, {
-    [Symbol.toStringTag]: {
-        value: "WindowProperties",
-        configurable: true
-    }
-});
-nothing.toStringNative(Window, "Window");
 // file path: E:\ning\code\Reverse\WEB\EnvBridge\supplementEnv\extraAdditions.js
 /**
  * 一些零散的补充
@@ -1051,14 +851,10 @@ nothing.toStringNative(Window, "Window");
 
 // 初始，统一代理
 nothing.init_proxy_object_1 = [
-    "window", "navigator", "localStorage", "screen", "history", "location", "document", "navigation", "navigator.plugins", 
-    "navigator.mimeTypes",
-];
-nothing.init_proxy_object_2 = [
-    "EventTarget", "Window", "Navigator", "Storage", "Screen", "History", "Location", "HTMLDocument", "Node", "Document",
-    "Navigation", "Plugin", "PluginArray", "MimeType", "MimeTypeArray", "Event",
-];
-
+    "window", "screen", "navigator.plugins", "navigator.mimeTypes", "performance", "navigator", "navigation", "location",
+    "localStorage", "history", "document", "crypto",
+]
+nothing.init_proxy_object_2 = []
 if (nothing.is_proxy)
 {
     for (let obj of [...nothing.init_proxy_object_1, ...nothing.init_proxy_object_2])
@@ -1076,6 +872,7 @@ globalThis = window;
 // this 没法改，偷偷存一个
 // this = window; 
 nothing.memory.this = this;
+
 // file path: E:\ning\code\Reverse\WEB\EnvBridge\supplementEnv\customFingerprint.js
 nothing.memory.plugins = [
     {
@@ -1122,34 +919,20 @@ for (let i = 0; i < nothing.memory.mime_types.length; i++)
     nothing.insertMimeTypes(nothing.newMimeType(tmp));
 }
 
-EventTarget.prototype.addEventListener = function addEventListener(type, listener, options)
-{
-    if (options != undefined) debugger;
+document.currentScript = null;
+document.readyState = "loading";
 
-    // 全局调用与示例调用区分
-    let  event_listeners;
-    if (this == nothing.memory.this) event_listeners = nothing.memory.event_listeners;
-    else 
+nothing.defineNativeMethod(window, "fetch", 
+    function fetch(data)
     {
-        if (nothing.memory.event_listeners_instance_map.has(this))
-        {
-            event_listeners = nothing.memory.event_listeners_instance_map.get(this);
-        }
-        else 
-        {
-            event_listeners = {};
-            nothing.memory.event_listeners_instance_map.set(this, event_listeners);
-        }
+        console.log("fetch", data);
     }
-
-    event_listeners[type] = listener;
-}
-
-
+)
 
 // 最后再开启 hook
 debugger;
-// nothing.is_hook_proxyhandler = true;
+nothing.is_hook_proxyhandler = true;
+
 // file path: E:\ning\code\Reverse\WEB\EnvBridge\examples\shape.js
 (function N(Yd, YY, YR, I) {
 	var YK = ReferenceError,
@@ -6059,3 +5842,31 @@ debugger;
 	c.setAttribute("_imp_apg_cid_", "sed-southwest-3fcbdcfb");
 	n.parentNode.insertBefore(c, n)
 }();
+
+let data = {
+    "0": "/api/security/v3/security/authorize",
+    "1": {
+        "body": "username=4565&password=564&application=landing-home-page&site=southwest&client_id=6b6199ac-6726-4642-b5bd-86eb07062161&scope=openid&response_type=id_token+swa_token",
+        "method": "POST",
+        "headers": {
+            "Accept": "application/json, text/javascript, */*; q=0.01",
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-User-Experience-ID": "cadc22bb-2eb7-4ffc-88e7-9a485ceab65f",
+            "X-API-Key": "l7xx944d175ea25f4b9c903a583ea82a1c4c",
+            "X-Channel-ID": "southwest",
+            "X-App-ID": "landing-home-page",
+            "x-swa-di-uid": "1bd68bec2326c2be94a00880cb60b5e5da99",
+            "x-swa-di-usid": "ed39e977c4c1106a9d984dffffc5f0bf4ff6",
+            "x-swa-di-pid": 3600061959968293,
+            "x-swa-di-dtid": "736547d72fb1409a50ec6f2dd69fef3dc93e",
+            "x-swa-di-ue": "eyJ0cyI6MTc0MDY0MTI4MTMyOCwicGF5cyI6WyJleUowY3lJNk1UYzBNRFkwTVRJM09EQXhNQ3dpY0dGNUlqb2lTbFJXUTBwVVpFTktWRWw1WWtjNWFrcFVTWGxLVkU1Q1NsUkplV0ZJVWpCalNFMXNUVEJGYkUxcldXeE5hMW96WkROamRXTXlPVEZrUjJneldsaE9NRXh0VG5aaVUxVjVVbWxWZVUxcFZYbFJlVlY1VFc1Q2NGcERWWGxOYVZWNlVWUk5NazFFUVhkT2FrVTFUbFJyTlU1cVozbFBWRTFzVFd0TmJFMXFTbnBoVjFGc1RXcEpiRTB3Um5Wa1YzaHpTbFJLUkVwVVNYbFpiazV3V2tOVmVVMXBWWHBSVTFWNVRXMVdhMDE2Ykd4UFZHTXpXWHBTYWsxVVJYZE9iVVUxV2tSck5FNUhVbTFhYlZwdFdYcFdiVTFIU20xT1IxcHRUbWxWZVUxcFZYbFJlVlY1VFc1U2VrcFVTWGxLVkU1Q1RWUmpNRTFFV1RCTlZFa3pUbnBKZWsxVFZYbFJlVlY1VFc1U05XTkhWV3hOYWtsc1RUQkZiRTFxU25Sa1NFcHlTbFJKZVVwVVNrUktWRWw1WTBkR05VcFVTWGxLVkU1Q1NsUmtRMHBVU1hsa1ExVjVUV2xWZWxGVVJUTk9SRUV5VGtSRmVVNTZZM2xOZWtWc1RXdE5iRTFxU20xYVExVjVUV2xWZWxGVVozaFBVelIzVFdsVmVWRjVWWGxOYms1clNsUkplVXBVVGtKUFJFRTFUR3BCTWsxRVFYZE5SRUYzVFVSQmQwMUVSV3hOYTAxc1RXcEthVmxwVlhsTmFWVjZVVk5WTVZGcVl6Rk5lVlY1VVhwSmVFcFVTa1JOVkVFMFRVTlZlVkY2V1RSTmFWVXhVa05WZVZGNVZYbE5iazFzVFdwSmJFMHdSV3hPVlVsc1RqQkpiRTFxU2pCS1ZFbDVTbFJPUWsxRFZYbFJlVlY1VFc1bmJFMXFTV3hOTUVVelRsUk5iRTFyVFd4TmFrbzFTbFJKZVVwVVRrSk9hbWQ1U2xSS1JFcFVTWGxhYlZGc1RXcEpiRTB3UlhkS1ZFcEVTbFJKZVdNeVVXeE5ha2xzVFRCRmQwcFVTa1JLVkVsNVdYbFZlVTFwVlhwUlZFVnNUV3ROYkUxcVNtaEtWRWw1U2xST1FrMURWWGxSZVZWNVRXMHhORXBVU1hsS1ZFNUNUVU5WZVZGNVZYbE5iVEYxU2xSSmVVcFVUa0pOUTFVelVrTlZlVkY1VlROUmFWVjVUVzVSYkUxcVNXeE5NRVV4VFdwSmJFMXJUV3hOYWtvMFNsUkplVXBVVGtKTlZFRXpUa05WZVZGNVZYbE5ibXRzVFdwSmJFMHdSWGxOVTFWNVVYbFZlVTF0V210S1ZFbDVTbFJPUWs1NlVYcE1hbGw0U2xSS1JFcFVTWGxqTWxGc1RXcEpiRTB3UlROTmVsRjFUMFJKYkUxclRXeE5ha3BxU2xSSmVVcFVUa0pOVkdOc1RXdE5iRTFxU21oS1ZFbDVTbFJPUWs1cWF6Rk5RelEwU2xSS1JFcFVTWGxpV0dkc1RXcEpiRTB3UlhwT2FtTjRUbE0wZUUxcFZYbFJlVlY1VFcweGRVcFVTWGxLVkU1Q1QxUkpkVTFVVld4T01GRnNUV3ROYkU0d1NXeE5ha293U2xSSmVVcFVUa0pPZW1NelNsUktSRXBVU1hsbFExVjVUV2xWZWxGVVJYZE5SRUZzVFd0TmJFMXFTalZLVkVsNVNsUk9RazFxWTJ4TmEwMXNUV3BLYlZwRFZYbE5hVlY2VVZSak1VeHFUVFZLVkVwRVNsUkplV015VVd4TmFrbHNUVEJGTTA1RE5IbE9RMVY1VVhsVmVVMXRUV3hOYWtsc1RUQkZlRTlUVlhsUmVWVjVUVzFGYkUxcVNXeE5NRVV3VDFSTmRVNTZVV3hOYTAxc1RXcEtkR1ZEVlhsTmFWVjZVVlJGZDAxNlFYVk9lbWRzVFd0TmJFMXFTblJpYVZWNVRXbFZlbEZVVlhoTWFrazBTbFJrUlVwVVZrVktWRXBFU2xSSmVWbDVWWGxOYVZWNlVWUk5NMHBVU2tSS1ZFbDVZekpOYkUxcVNXeE5NRVY2U2xSa1JVcFVaRVZLVkZaRkluMD0iLCJleUowY3lJNk1UYzBNRFkwTVRJMk56azVOaXdpY0dGNUlqb2lTbFJXUTBwVVpFTktWRWw1WWtjNWFrcFVTWGxLVkU1Q1NsUkplV0ZJVWpCalNFMXNUVEJGYkUxcldXeE5hMW96WkROamRXTXlPVEZrUjJneldsaE9NRXh0VG5aaVUxVjVVbWxWZVUxcFZYbFJlVlY1VFc1Q2NGcERWWGxOYVZWNlVWUk5NazFFUVhkT2FrVTFUbFJyTlU1cVozbFBWRTFzVFd0TmJFMXFTbnBoVjFGc1RXcEpiRTB3Um5Wa1YzaHpTbFJLUkVwVVNYbFpiazV3V2tOVmVVMXBWWHBSVTFWNVRXMVdhMDE2Ykd4UFZHTXpXWHBTYWsxVVJYZE9iVVUxV2tSck5FNUhVbTFhYlZwdFdYcFdiVTFIU20xT1IxcHRUbWxWZVUxcFZYbFJlVlY1VFc1U2VrcFVTWGxLVkU1Q1RWUmpNRTFFV1RCTlZFa3lUbnByTlUxcFZYbFJlVlY1VFc1U05XTkhWV3hOYWtsc1RUQkZiRTFxU25ka1J6VndTbFJKZVVwVVNrUktWRWw1WTBkR05VcFVTWGxLVkU1Q1NsUmtRMHBVU1hsa1ExVjVUV2xWZWxGVVJUTk9SRUV5VGtSRmVVNXFZelZQVkVsc1RXdE5iRTFxU210a2VWVjVUV2xWZWxGVVJURk5WR3RzVFd0TmJFMXFTbXRoUTFWNVRXbFZlbEZVUlROTlZHZHNUV3ROYkUxcVNqTmtlVlY1VFdsVmVsRlVSVEZOZWxsc1RXdE5iRTFxU2pOaFExVjVUV2xWZWxGVVdUVk9VMVY1VVhsVmVVMXVUbk5LVkVsNVNsUk9RazFEVlhsUmVWVjVUVzVPTUVwVVNYbEtWRTVDVFVOVmVWRjVWWGxOYmtKNVNsUkplVXBVVGtKTlV6UjVUbE5WZVZGNVZYbE5ia3BzV21sVmVVMXBWWHBSVnpVeFlrZDNiRTFyVFd4TmFrb3dZVmhSYkUxcVNXeE5NRVZzVFdwS1ZHSXpWakJoU0dSc1l6TlJiRTFxUWtKaFdFcHpZVmMxYkdONVZYbE5RMVV6VVhsVmVVMUZTblppTW5Oc1RXcENSMkpIYkc1aFNGSjZTbFJLUkVwVVNYZFVWMFp5V2xOVmVVMUdTbXhqTWxaNVpHMUdNR0ZYT1hWamVWVjVUVU5WZVU1cFZYbE5Sa0p6V1ZjMGJFMXFRbWhLVkVsM1ZraEtjR05EVlhsTmFWVjVVWGxWZVUxdVFuZGhWMUZzVFdwSmJFMHdSV3hOYWtrMFRVUkZkMDFxYTNwUFJGVXpUWHBqTkU5VVp6RktWRWw1U2xSa1JVcFVaRVZLVkZaRkluMD0iLCJleUowY3lJNk1UYzBNRFkwTVRJNE1UTXlPQ3dpY0dGNUlqb2lTbFJXUTBwVVpFTktWRWw1WWtjNWFrcFVTWGxLVkU1Q1NsUkplV0ZJVWpCalNFMXNUVEJGYkUxcldXeE5hMW96WkROamRXTXlPVEZrUjJneldsaE9NRXh0VG5aaVUxVjVVbWxWZVUxcFZYbFJlVlY1VFc1Q2NGcERWWGxOYVZWNlVWUk5NazFFUVhkT2FrVTFUbFJyTlU1cVozbFBWRTFzVFd0TmJFMXFTbnBoVjFGc1RXcEpiRTB3Um5Wa1YzaHpTbFJLUkVwVVNYbFpiazV3V2tOVmVVMXBWWHBSVTFWNVRXMVdhMDE2Ykd4UFZHTXpXWHBTYWsxVVJYZE9iVVUxV2tSck5FNUhVbTFhYlZwdFdYcFdiVTFIU20xT1IxcHRUbWxWZVUxcFZYbFJlVlY1VFc1U2VrcFVTWGxLVkU1Q1RWUmpNRTFFV1RCTlZFa3pUMFJKZDA1RFZYbFJlVlY1VFc1U05XTkhWV3hOYWtsc1RUQkZiRTFxU25Sa1NFcHlTbFJKZVVwVVNrUktWRWw1WTBkR05VcFVTWGxLVkU1Q1NsUmtRMHBVU1hsa1ExVjVUV2xWZWxGVVJUTk9SRUV5VGtSRmVVNTZaM2xOUkZGc1RXdE5iRTFxU20xYVExVjVUV2xWZWxGVVVYaE9RelI0VDBOVmVWRjVWWGxOYms1clNsUkplVXBVVGtKTmVsRXhUR3BOTTBwVVNrUktWRWw1V1cxSmJFMXFTV3hOTUVWc1RsVkpOVTU2V1d4TmEwMTVUME5WZVZGNlJYaE5WRTFzVFd0TmVrNVVUV3hPVlZGc1RXdE5iRTFxU25wS1ZFbDVTbFJPUWtwVVZrTktWR1JEU2xSSmVXUkRWWGxOYVZWNlVWUlpkMHBVU2tSS1ZFbDVaVU5WZVUxcFZYcFJWR3MwVG1sVmVWRjVWWGxOYm10c1RXcEpiRTB3UlRKTlUxVjVVWGxWZVUxdFdtdEtWRWw1U2xST1FrMTZZM1ZPUkUxc1RXdE5iRTFxU25wYVExVjVUV2xWZWxGVVRUSk1hbU16U2xSS1JFcFVTWGxaZVZWNVRXbFZlbEZVYTJ4TmEwMXNUV3BLYUVwVVNYbEtWRTVDVGxSTk5FeHFSWHBLVkVwRVNsUkplV0pZWjJ4TmFrbHNUVEJGTlU1NlJYVlBSRTFzVFd0TmJFMXFTblJpYVZWNVRXbFZlbEZVVlhWTlUxVXpVa05WZVZGNVZUTlJhVlY1VFc1UmJFMXFTV3hOTUVWNlRWUlpiRTFyVFd4TmFrbzBTbFJKZVVwVVRrSk5WRUY0VDBOVmVWRjVWWGxOYm10c1RXcEpiRTB3UlhoUFJHdHNUV3ROYkUxcVNtMWFRMVY1VFdsVmVsRlVSVEJQVXpRMFNsUktSRXBVU1hsak1sRnNUV3BKYkUwd1JYaE5la1YxVDFSUmJFMXJUV3hOYWtwcVNsUkplVXBVVGtKTmVrbHNUV3ROYkUxcVNtaEtWRWw1U2xST1FrNVVaekZNYWtsNVNsUktSRXBVU1hsaVdHZHNUV3BKYkUwd1JYaE5lbFV4VEdwSk1rcFVTa1JLVkVsNVlsYzBiRTFxU1d4Tk1FVjRUV3BWYkU0d1VXeE5hMDFzVGpCSmJFMXFTakJLVkVsNVNsUk9RazVVWnpWS1ZFcEVTbFJKZVdWRFZYbE5hVlY2VVZSRmQwMVVaMnhOYTAxc1RXcEtOVXBVU1hsS1ZFNUNUVlJyZDBwVVNrUktWRWw1V20xUmJFMXFTV3hOTUVWNlNsUktSRXBVU1hsak1sRnNUV3BKYkUwd1JYaEtWRXBFU2xSSmVWbDVWWGxOYVZWNlVWUk5iRTFyVFd4TmFrcG9TbFJKZVVwVVRrSlBSRkYxVG1wTmJFMXJUV3hOYWtwMFpVTlZlVTFwVlhwUlZFVjVUbE5WZVZGNVZYbE5iVEYxU2xSSmVVcFVUa0pOZVRRMFQxTlZNMUpEVlhsUmVWVXpVV2xWZVUxdVVXeE5ha2xzVFRCRmVFNUVRVEJLVkVwRVNsUkplV1ZEVlhsTmFWVjZVVlJGZDAxVVoyeE5hMDFzVFdwS05VcFVTWGxLVkU1Q1RWUnJkMHBVU2tSS1ZFbDVXbTFSYkUxcVNXeE5NRVV3U2xSS1JFcFVTWGxqTWxGc1RXcEpiRTB3UlhkS1ZFcEVTbFJKZVZsNVZYbE5hVlY2VVZSTmJFMXJUV3hOYWtwb1NsUkplVXBVVGtKUFZFRjFUVlJKYkUxclRXeE5ha3AwWlVOVmVVMXBWWHBSVkVVd1RXazBORTVwVlhsUmVWVjVUVzB4ZFVwVVNYbEtWRTVDVFdrME1VcFVaRVZLVkVwRVNsUmtRMHBVU1hsa1ExVjVUV2xWZWxGVVJUSk9ha1ZzVFd0TmJFMXFTalJLVkVsNVNsUk9RazFVUVhoTmVWVjVVWGxWZVUxdWEyeE5ha2xzVFRCRmVVNUVUV3hOYTAxc1RXcEtiVnBEVlhsTmFWVjZVVlJWZWt4cWEyeE5hMDFzVFdwS2VscERWWGxOYVZWNlVWUlZla3hxU1RCS1ZFcEVTbFJKZVZsNVZYbE5hVlY2VVZSSk0wcFVTa1JLVkVsNVdWTlZlVTFwVlhwUlZFbDZUbmswZWsxNVZYbFJlVlY1VFcweE5FcFVTWGxLVkU1Q1RtcE5NMHhxVFRSS1ZFcEVTbFJKZVdKWE5HeE5ha2xzVFRCRmVVNVRWVE5TUTFWNVVYbFZNMUZwVlhsTmJsRnNUV3BKYkUwd1JYbE5SRWswU2xSS1JFcFVTWGxsUTFWNVRXbFZlbEZVUlhkTmFsbHNUV3ROYkUxcVNqVktWRWw1U2xST1FrMXFZM2hLVkVwRVNsUkplVnB0VVd4TmFrbHNUVEJGZWs1VE5ETk9VMVY1VVhsVmVVMXVUbXRLVkVsNVNsUk9RazE2UVhWUFJHTnNUV3ROYkUxcVNtcEtWRWw1U2xST1FrMVVUV3hOYTAxc1RXcEthRXBVU1hsS1ZFNUNUWHBOZUV4cWF6TktWRXBFU2xSSmVXSllaMnhOYWtsc1RUQkZNazU2VFhWTlZGVnNUV3ROYkUxcVNuUmlhVlY1VFdsVmVsRlVWWFZOYWxGc1RqQlJiRTFyVFd4T01FbHNUV3BLTUVwVVNYbEtWRTVDVFdwSk5FOVRWWGxSZVZWNVRXNW5iRTFxU1d4Tk1FVjRUVVJyTWtwVVNrUktWRWw1WlZOVmVVMXBWWHBSVkUxNlRVTlZlVkY1VlhsTmJWcHJTbFJKZVVwVVRrSlBWR2QxVFdwRmJFMXJUV3hOYWtwNldrTlZlVTFwVlhwUlZHdDRUR3BWTVVwVVNrUktWRWw1V1hsVmVVMXBWWHBSVkVsM1NsUktSRXBVU1hsWlUxVjVUV2xWZWxGVVdYaE9RelIzVGtOVmVWRjVWWGxOYlRFMFNsUkplVXBVVGtKTlZFMHhUV2swZDA5RFZYbFJlVlY1VFcweGRVcFVTWGxLVkU1Q1QxTTBlazVUVlROU1ExVXhVa05WZVZGNVZYbE5iVTFzVFdwSmJFMHdSWGhOYW1Oc1RXdE5iRTFxU25wWmVWVjVUV2xWZWxGVVkyeE9NRkZzVGpCUmJFNVZVVDBpZlE9PSJdfQ==",
+            "ADRUM": "isAjax:true"
+        },
+        "signal": {},
+        "credentials": "include"
+    }
+};
+window.fetch(data);
+
+debugger;
+// nothing.downLog()

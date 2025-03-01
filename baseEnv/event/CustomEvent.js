@@ -1,23 +1,14 @@
-function CustomEvent() 
-{ 
-    __obj.log("CustomEvent 被 new 了，报错，可能是查看堆栈检测。");
-    throw new TypeError("Illegal constructor");
-};
-
-Object.defineProperties(CustomEvent.prototype, {
-    [Symbol.toStringTag]: {
-        value: "CustomEvent",
-        configurable: true
-    }
-});
-__obj.toStringNative(CustomEvent, "CustomEvent");
+eval(__obj.defineNativeObject("CustomEvent", "Event"));
 
 /**
  * 方法实现
  */
-__obj.defineNativeFunc(CustomEvent.prototype, "initCustomEvent", 
-    function initCustomEvent(type, can_bubble, can_celable, detail)
+__obj.defineNativeMethod(CustomEvent.prototype, "initCustomEvent", 
+    function initCustomEvent(type, cancelBubble, cancelable, detail)
     {
-
+        this.type = type;
+        this.cancelBubble = cancelBubble;
+        this.cancelable = cancelable;
+        this.detail = detail;
     }
 )

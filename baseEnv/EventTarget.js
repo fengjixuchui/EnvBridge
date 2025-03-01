@@ -1,143 +1,59 @@
-function EventTarget() {};
-
-Object.defineProperties(EventTarget.prototype, {
-    [Symbol.toStringTag]: {
-        value: "EventTarget",
-        configurable: true
-    }
-})
-__obj.toStringNative(EventTarget, "EventTarget");
+eval(__obj.defineNativeObject("EventTarget"));
 
 // 全局的事件监听写在 __obj.memory 中
-__obj.memory.event_listeners = {};
-__obj.memory.event_listeners_instance_map = new Map();
+__obj.memory.event_listeners = new Map();
 
-// 实现不完全，没搞懂事件模型，先搁置
-// // 补充 addEventListener removeEventListener dispatchEvent 方法
-// EventTarget.prototype.addEventListener = function addEventListener(type, listener, options = false)
-// {
-//     // 处理默认参数
-//     const { capture = false, once = false, passive = false, signal } = typeof options === 'object' ? options : { capture: options };
-//     if (passive) __obj.log("addEventListener: 默认参数的 passive 设置为了 true,可能是检测.");
+/**
+ * 方法实现
+ */
+__obj.defineNativeMethod(EventTarget.prototype, "addEventListener", 
+    function addEventListener(type, listener, options)
+    {
+        if (options != undefined) debugger;
+
+        let event_listener = __obj.memory.event_listeners.get(this);
+        if (event_listener == undefined) 
+        {
+            event_listener = {}
+            __obj.memory.event_listeners.set(this, event_listener);
+        }
     
-//     // 全局调用与示例调用区分
-//     let  event_listeners;
-//     if (this == nothing.memory.this) event_listeners = __obj.memory.event_listeners;
-//     else 
-//     {
-//         if (__obj.memory.event_listeners_instance_map.has(this))
-//         {
-//             event_listeners = __obj.memory.event_listeners_instance_map.get(this);
-//         }
-//         else 
-//         {
-//             event_listeners = {};
-//             __obj.memory.event_listeners_instance_map.set(this, event_listeners);
-//         }
-//     }
-//     // 实现
-//     if (!event_listeners[type])
-//     {
-//         event_listeners[type] = { capture: [], bubble: [] };
-//     }
+        if (event_listener[type] == undefined)
+        {
+            event_listener[type] = [];
+        }    
+        
+        event_listener[type].push(listener);
+        return true;
+    }
+)
 
-//     const list = event_listeners[type][capture ? 'capture' : 'bubble'];
-//     const listener_object = { listener, once, passive, capture };
+__obj.defineNativeMethod(EventTarget.prototype, "removeEventListener", 
+    function removeEventListener(type, listener, options)
+    {
+        if (options != undefined) debugger;
 
-//     // 没有相同的 listener 就加入内存中
-//     if (!list.some(l => l.listener === listener))
-//     {
-//         list.push(listener_object);
-//         // 如果提供了 AbortSignal，监听 abort 事件来移除监听器
-//         if (signal)
-//         {
-//             signal.addEventListener('abort', () => {
-//                 this.removeEventListener(type, listener, { capture });
-//             });
-//         }
-//     }
-// }
-// EventTarget.prototype.removeEventListener = function removeEventListener(type, listener, options = false)
-// {
-//      // 处理默认参数
-//     const { capture = false } = typeof options === 'object' ? options : { capture: options };
-//     // 全局调用与示例调用区分
-//     let  event_listeners;
-//     if (this == nothing.memory.this) event_listeners = __obj.memory.event_listeners;
-//     else 
-//     {
-//         if (__obj.memory.event_listeners_instance_map.has(this))
-//         {
-//             event_listeners = __obj.memory.event_listeners_instance_map.get(this);
-//         }
-//         else 
-//         {
-//             __obj.log("removeEventListener: 删除了一个未注册的事件,可能是检测.");
-//             return;
-//         }
-//     }
-//     // 检查
-//     if (!event_listeners[type]) 
-//     {
-//         __obj.log("removeEventListener: 删除了一个未注册的事件,可能是检测.");
-//         return;
-//     }
+        let event_listener = __obj.memory.event_listeners.get(this);
+        let arr = event_listener[type];
+        for (let i = 0; i < arr.length; ++i)
+        {
+            if (arr[i] == listener) arr.splice(i, 1);
+        }
+    }
+)
 
-//     const list = event_listeners[type][capture ? 'capture' : 'bubble'] || [];
-//     // 检查
-//     if (list.length == 0) 
-//     {
-//         __obj.log("removeEventListener: 删除了一个未注册的事件,可能是检测.");
-//         return;
-//     }
-//     event_listeners[type][capture ? 'capture' : 'bubble'] = list.filter(l => l.listener !== listener);
-// }
-// EventTarget.prototype.dispatchEvent = function dispatchEvent(event)
-// {
-//     const { type, target, cancelable } = event;
-//     // 全局调用与示例调用区分
-//     let  event_listeners;
-//     if (this == nothing.memory.this) event_listeners = __obj.memory.event_listeners;
-//     else 
-//     {
-//         if (__obj.memory.event_listeners_instance_map.has(this))
-//         {
-//             event_listeners = __obj.memory.event_listeners_instance_map.get(this);
-//         }
-//         else 
-//         {
-//             __obj.log("dispatchEvent: 触发了一个未注册的事件,可能是检测.");
-//             return;
-//         }
-//     }
+__obj.defineNativeMethod(EventTarget.prototype, "dispatchEvent", 
+    function dispatchEvent(event)
+    {
+        let event_listener = __obj.memory.event_listeners.get(this);
+        if (!event_listener) return false;
 
-//     const listeners = event_listeners[type];
-//     if (!listeners) return true;
+        let arr = event_listener[event.type];
+        if (!arr) return false;
 
-//     let defaultPrevented = false;
-//     const handleEvent = (list, event) => {
-//         for (const listenerObject of list) 
-//         {
-//             if (listenerObject.once) 
-//                 this.removeEventListener(type, listenerObject.listener, { capture: listenerObject.capture });
-            
-
-//             if (!listenerObject.passive && event.preventDefault) 
-//             {
-//                 event.preventDefault = () => {
-//                     defaultPrevented = true;
-//                 };
-//             }
-
-//             listenerObject.listener.call(target, event);
-//         }
-//     };
-
-//     // 捕获阶段
-//     if (listeners.capture) handleEvent(listeners.capture, event);
-
-//     // 目标阶段
-//     if (listeners.bubble) handleEvent(listeners.bubble, event);
-
-//     return !(cancelable && defaultPrevented);
-// }
+        for (let listener of arr)
+        {
+            listener.call(this, event);
+        }
+    }
+)

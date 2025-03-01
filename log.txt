@@ -1,0 +1,308 @@
+[window] get property: "window" value: browser window
+[window] has property: "addEventListener" value: true
+[window] get property: "addEventListener" value: function addEventListener
+[document] get property: "createEvent" value: function createEvent
+[document] get property: "currentScript" value: null
+[document] get property: "currentScript" value: null
+[document] get property: "currentScript" value: null
+[document] get property: "currentScript" value: null
+[CustomEvent] get property: "initCustomEvent" value: function initCustomEvent
+[CustomEvent] set property: "type" value: "ENZQlHnEl"
+[CustomEvent] set property: "cancelBubble" value: false
+[CustomEvent] set property: "cancelable" value: false
+[CustomEvent] set property: "detail" value: ["A35-hxKVAQAAG1A···AAA=="|length 88|,"PxDBtUze=-F9VmN···6Zk24"|length 65|,[],[489183616,250207296,1934983472,1190651992,1706802566,1184133777,220295256,1271821314],"MLc3GhEtidx//l6···S+QlP"|length 24|,"MLc3GhEtidx//l6···S+QlP"|length 24|,[],undefined,null]
+[CustomEvent] get property: "type" value: "ENZQlHnEl"
+[window] has property: "removeEventListener" value: true
+[window] get property: "removeEventListener" value: function removeEventListener
+[window] has property: "Function" value: true
+[window] get property: "Function" value: function Function
+[window] has property: "Function" value: true
+[window] get property: "Function" value: function Function
+[window] has property: "Function" value: true
+[window] get property: "Function" value: function Function
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Array" value: true
+[window] get property: "Array" value: function Array
+[window] has property: "Array" value: true
+[window] get property: "Array" value: function Array
+[window] has property: "Array" value: true
+[window] get property: "Array" value: function Array
+[window] has property: "Array" value: true
+[window] get property: "Array" value: function Array
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Function" value: true
+[window] get property: "Function" value: function Function
+[window] has property: "Array" value: true
+[window] get property: "Array" value: function Array
+[window] has property: "Array" value: true
+[window] get property: "Array" value: function Array
+[window] get property: "Reflect" value: browser reflect
+[window] has property: "Reflect" value: true
+[window] get property: "Reflect" value: browser reflect
+[window] has property: "Reflect" value: true
+[window] get property: "Reflect" value: browser reflect
+[window] has property: "Reflect" value: true
+[window] get property: "Reflect" value: browser reflect
+[window] has property: "document" value: true
+[window] get property: "document" value: browser htmldocument
+[document] get property: "createEvent" value: function createEvent
+[window] has property: "document" value: true
+[window] get property: "document" value: browser htmldocument
+[document] get property: "createEvent" value: function createEvent
+[CustomEvent] get property: "initCustomEvent" value: function initCustomEvent
+[CustomEvent] set property: "type" value: "ZT4tcOwEFkVEzfiT1T6u"
+[CustomEvent] set property: "cancelBubble" value: false
+[CustomEvent] set property: "cancelable" value: false
+[CustomEvent] set property: "detail" value: {exchange:"function c"}
+[window] has property: "dispatchEvent" value: true
+[window] get property: "dispatchEvent" value: function dispatchEvent
+[CustomEvent] get property: "type" value: "ZT4tcOwEFkVEzfiT1T6u"
+[window] has property: "CustomEvent" value: true
+[window] get property: "CustomEvent" value: function CustomEvent
+[window] get property: "global" value: undefined
+[window] get property: "self" value: browser window
+[window] has property: "self" value: true
+[window] get property: "self" value: browser window
+[window] has property: "self" value: true
+[window] get property: "self" value: browser window
+[window] get property: "self" value: browser window
+[window] has property: "self" value: true
+[window] get property: "self" value: browser window
+[window] has property: "self" value: true
+[window] get property: "self" value: browser window
+[window] get property: "performance" value: browser performance
+[window] has property: "Math" value: true
+[window] get property: "Math" value: browser math
+[window] has property: "Math" value: true
+[window] get property: "Math" value: browser math
+[window] has property: "Math" value: true
+[window] get property: "Math" value: browser math
+[window] has property: "Math" value: true
+[window] get property: "Math" value: browser math
+[window] has property: "Math" value: true
+[window] get property: "Math" value: browser math
+[window] get property: "document" value: browser htmldocument
+[window] has property: "document" value: true
+[window] get property: "document" value: browser htmldocument
+[document] get property: "readyState" value: "loading"
+[window] has property: "document" value: true
+[window] get property: "document" value: browser htmldocument
+[document] get property: "readyState" value: "loading"
+[window] has property: "document" value: true
+[window] get property: "document" value: browser htmldocument
+[document] get property: "addEventListener" value: function addEventListener
+[window] has property: "document" value: true
+[window] get property: "document" value: browser htmldocument
+[document] get property: "addEventListener" value: function addEventListener
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Array" value: true
+[window] get property: "Array" value: function Array
+[window] has property: "Array" value: true
+[window] get property: "Array" value: function Array
+[window] get property: "Uint8Array" value: function Uint8Array
+[window] has property: "Uint8Array" value: true
+[window] get property: "Uint8Array" value: function Uint8Array
+[window] get property: "Float64Array" value: function Float64Array
+[window] has property: "Float64Array" value: true
+[window] get property: "Float64Array" value: function Float64Array
+[window] has property: "Math" value: true
+[window] get property: "Math" value: browser math
+[window] get property: "crypto" value: browser crypto
+[window] has property: "crypto" value: true
+[window] get property: "crypto" value: browser crypto
+[window] get property: "performance" value: browser performance
+[window] has property: "performance" value: true
+[window] get property: "performance" value: browser performance
+[window] get property: "ArrayBuffer" value: function ArrayBuffer
+[window] has property: "ArrayBuffer" value: true
+[window] get property: "ArrayBuffer" value: function ArrayBuffer
+[window] has property: "ArrayBuffer" value: true
+[window] get property: "ArrayBuffer" value: function ArrayBuffer
+[window] get property: "Int32Array" value: function Int32Array
+[window] has property: "Function" value: true
+[window] get property: "Function" value: function Function
+[window] has property: "Function" value: true
+[window] get property: "Function" value: function Function
+[window] has property: "Function" value: true
+[window] get property: "Function" value: function Function
+[window] has property: "Function" value: true
+[window] get property: "Function" value: function Function
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "String" value: true
+[window] get property: "String" value: function String
+[window] has property: "document" value: true
+[window] get property: "document" value: browser htmldocument
+[window] has property: "window" value: true
+[window] get property: "window" value: browser window
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] get property: "HTMLAnchorElement" value: function HTMLAnchorElement
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Function" value: true
+[window] get property: "Function" value: function Function
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "RegExp" value: true
+[window] get property: "RegExp" value: function RegExp
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Document" value: true
+[window] get property: "Document" value: function Document
+[window] has property: "Node" value: true
+[window] get property: "Node" value: function Node
+[window] has property: "Node" value: true
+[window] get property: "Node" value: function Node
+[window] has property: "HTMLElement" value: true
+[window] get property: "HTMLElement" value: function HTMLElement
+[window] has property: "Node" value: true
+[window] get property: "Node" value: function Node
+[window] has property: "Document" value: true
+[window] get property: "Document" value: function Document
+[window] has property: "HTMLIFrameElement" value: true
+[window] get property: "HTMLIFrameElement" value: function HTMLIFrameElement
+[window] has property: "localStorage" value: true
+[window] get property: "localStorage" value: browser storage
+[window] has property: "Function" value: true
+[window] get property: "Function" value: function Function
+[window] has property: "Function" value: true
+[window] get property: "Function" value: function Function
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Function" value: true
+[window] get property: "Function" value: function Function
+[window] has property: "Function" value: true
+[window] get property: "Function" value: function Function
+[window] has property: "Date" value: true
+[window] get property: "Date" value: function Date
+[window] has property: "Function" value: true
+[window] get property: "Function" value: function Function
+[window] has property: "Function" value: true
+[window] get property: "Function" value: function Function
+[window] has property: "Date" value: true
+[window] get property: "Date" value: function Date
+[window] has property: "Function" value: true
+[window] get property: "Function" value: function Function
+[window] has property: "Function" value: true
+[window] get property: "Function" value: function Function
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] get property: "Float32Array" value: function Float32Array
+[window] get property: "Float64Array" value: function Float64Array
+[window] get property: "Uint8Array" value: function Uint8Array
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "window" value: true
+[window] get property: "window" value: browser window
+[window] get property: "document" value: browser htmldocument
+[window] get property: "HTMLFormElement" value: function HTMLFormElement
+[window] get property: "Event" value: function Event
+[window] get property: "Event" value: function Event
+[window] get property: "Event" value: function Event
+[window] get property: "Event" value: function Event
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "Object" value: true
+[window] get property: "Object" value: function Object
+[window] has property: "document" value: true
+[window] get property: "document" value: browser htmldocument
+[window] has property: "window" value: true
+[window] get property: "window" value: browser window
+[CustomEvent] get property: "detail" value: ["A35-hxKVAQAAG1A···AAA=="|length 88|,"PxDBtUze=-F9VmN···6Zk24"|length 65|,[],[489183616,250207296,1934983472,1190651992,1706802566,1184133777,220295256,1271821314],"MLc3GhEtidx//l6···S+QlP"|length 24|,"MLc3GhEtidx//l6···S+QlP"|length 24|,[],undefined,null]
+[window] has property: "document" value: true
+[window] get property: "document" value: browser htmldocument
+[document] get property: "createEvent" value: function createEvent
+[CustomEvent] get property: "initCustomEvent" value: function initCustomEvent
+[CustomEvent] set property: "type" value: "pfXqYdYYZ"
+[CustomEvent] set property: "cancelBubble" value: false
+[CustomEvent] set property: "cancelable" value: true
+[CustomEvent] set property: "detail" value: {exchange:"function c"}
+[window] has property: "dispatchEvent" value: true
+[window] get property: "dispatchEvent" value: function dispatchEvent
+[CustomEvent] get property: "type" value: "pfXqYdYYZ"
+[document] get property: "createEvent" value: function createEvent
+[CustomEvent] get property: "initCustomEvent" value: function initCustomEvent
+[CustomEvent] set property: "type" value: "cRGHUGTDx9XPVtt5hQ2b"
+[CustomEvent] set property: "cancelBubble" value: false
+[CustomEvent] set property: "cancelable" value: true
+[CustomEvent] set property: "detail" value: {}
+[CustomEvent] get property: "type" value: "cRGHUGTDx9XPVtt5hQ2b"
+[window] get property: "fetch" value: function fetch

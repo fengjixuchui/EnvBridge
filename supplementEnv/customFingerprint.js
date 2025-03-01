@@ -43,31 +43,16 @@ for (let i = 0; i < __obj.memory.mime_types.length; i++)
     __obj.insertMimeTypes(nothing.newMimeType(tmp));
 }
 
-EventTarget.prototype.addEventListener = function addEventListener(type, listener, options)
-{
-    if (options != undefined) debugger;
+document.currentScript = null;
+document.readyState = "loading";
 
-    // 全局调用与示例调用区分
-    let  event_listeners;
-    if (this == nothing.memory.this) event_listeners = __obj.memory.event_listeners;
-    else 
+__obj.defineNativeMethod(window, "fetch", 
+    function fetch(data)
     {
-        if (__obj.memory.event_listeners_instance_map.has(this))
-        {
-            event_listeners = __obj.memory.event_listeners_instance_map.get(this);
-        }
-        else 
-        {
-            event_listeners = {};
-            __obj.memory.event_listeners_instance_map.set(this, event_listeners);
-        }
+        console.log("fetch", data);
     }
-
-    event_listeners[type] = listener;
-}
-
-
+)
 
 // 最后再开启 hook
 debugger;
-// __obj.is_hook_proxyhandler = true;
+__obj.is_hook_proxyhandler = true;

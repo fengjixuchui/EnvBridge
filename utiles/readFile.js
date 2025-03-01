@@ -48,8 +48,9 @@ function readJsFiles(dir, priority)
 
     if (priority != undefined)
     {
-        for (let key of priority)
+        for (let path_arr of priority)
         {
+            let key = path.resolve(dir, ...path_arr);
             code += code_map[key];
             delete code_map[key];
         }

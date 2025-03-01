@@ -4,14 +4,10 @@
 
 // 初始，统一代理
 __obj.init_proxy_object_1 = [
-    "window", "navigator", "localStorage", "screen", "history", "location", "document", "navigation", "navigator.plugins", 
-    "navigator.mimeTypes",
-];
-__obj.init_proxy_object_2 = [
-    "EventTarget", "Window", "Navigator", "Storage", "Screen", "History", "Location", "HTMLDocument", "Node", "Document",
-    "Navigation", "Plugin", "PluginArray", "MimeType", "MimeTypeArray", "Event",
-];
-
+    "window", "screen", "navigator.plugins", "navigator.mimeTypes", "performance", "navigator", "navigation", "location",
+    "localStorage", "history", "document", "crypto",
+]
+__obj.init_proxy_object_2 = []
 if (__obj.is_proxy)
 {
     for (let obj of [...__obj.init_proxy_object_1, ...__obj.init_proxy_object_2])

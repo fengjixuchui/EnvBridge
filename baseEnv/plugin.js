@@ -1,58 +1,11 @@
-function Plugin() 
-{ 
-    __obj.log("Plugin 被 new 了，报错，可能是查看堆栈检测。");
-    throw new TypeError("Illegal constructor");
-};
-
-function PluginArray() 
-{ 
-    __obj.log("PluginArray 被 new 了，报错，可能是查看堆栈检测。");
-    throw new TypeError("Illegal constructor");
-};
-
-function MimeType() 
-{ 
-    __obj.log("MimeType 被 new 了，报错，可能是查看堆栈检测。");
-    throw new TypeError("Illegal constructor");
-};
-
-function MimeTypeArray() 
-{ 
-    __obj.log("MimeTypeArray 被 new 了，报错，可能是查看堆栈检测。");
-    throw new TypeError("Illegal constructor");
-};
+eval(__obj.defineNativeObject("Plugin"));
+eval(__obj.defineNativeObject("PluginArray"));
+eval(__obj.defineNativeObject("MimeType"));
+eval(__obj.defineNativeObject("MimeTypeArray"));
 
 navigator.plugins = {};
 navigator.mimeTypes = {};
 navigator.plugins.__proto__ = PluginArray.prototype;
 navigator.mimeTypes.__proto__ = MimeTypeArray.prototype;
 
-Object.defineProperties(Plugin.prototype, {
-    [Symbol.toStringTag]: {
-        value: "Plugin",
-        configurable: true
-    }
-});
-Object.defineProperties(MimeType.prototype, {
-    [Symbol.toStringTag]: {
-        value: "MimeType",
-        configurable: true
-    },
-});
-Object.defineProperties(PluginArray.prototype, {
-    [Symbol.toStringTag]: {
-        value: "PluginArray",
-        configurable: true
-    }
-});
-Object.defineProperties(MimeTypeArray.prototype, {
-    [Symbol.toStringTag]: {
-        value: "MimeTypeArray",
-        configurable: true
-    }
-});
-__obj.toStringNative(Plugin, "Plugin");
-__obj.toStringNative(MimeType, "MimeType");
-__obj.toStringNative(PluginArray, "PluginArray");
-__obj.toStringNative(MimeTypeArray, "MimeTypeArray");
 

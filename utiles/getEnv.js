@@ -9,7 +9,18 @@ function getEnv(obj_name)
     let base_env_path = path.resolve(__dirname, "..", "baseEnv");
     let supplement_env_path = path.resolve(__dirname, "..", "supplementEnv");
 
-    code += readJsFiles(base_env_path);;
+    let priority = [
+        ["EventTarget.js"],
+
+        ["window.js"],
+        
+        ["element", "Node.js"],
+        ["element", "Element.js"],
+        ["element", "HTMLElement.js"],
+
+        ["event", "Event.js"],
+    ];
+    code += readJsFiles(base_env_path, priority);;
     code += readJsFile(path.resolve(supplement_env_path, "extraAdditions.js"));
     code += readJsFile(path.resolve(supplement_env_path, "customFingerprint.js"));
 
